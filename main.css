@@ -1,0 +1,175 @@
+/*#controls button,
+.rotation-controls button,*/
+#toggleControls,
+#flick-control,
+.flick-option {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+#flick-control {
+      position: fixed;
+      bottom: 70px;
+      right: 70px;
+      z-index: 1000;
+      pointer-events: auto;
+      transition: all 0.01s;  /* 位置の変更をスムーズに */
+  }
+
+  #drag-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(255, 255, 255, 0.7);
+      z-index: 900;  /* flick-controlより下、他の要素より上 */
+      pointer-events: all;
+  }
+
+  .flick-button {
+      -webkit-touch-callout: none; /* iOS Safari */
+      -webkit-user-select: none;   /* Chrome/Safari/Opera */
+      -khtml-user-select: none;    /* Konqueror */
+      -moz-user-select: none;      /* Firefox */
+      -ms-user-select: none;       /* Internet Explorer/Edge */
+      user-select: none;           /* Non-prefixed version */
+      -webkit-tap-highlight-color: transparent; /* タップ時のハイライトを消す */
+  }
+
+
+  .flick-circle {
+      width: 40px;
+      height: 40px;
+      background-color: rgba(255, 255, 255, 0.8);
+      border: 2px solid #333;
+      border-radius: 50%;
+      cursor: pointer;
+      position: relative;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  }
+
+  #flick-options {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+
+  }
+
+  .flick-option {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      background-color: rgba(255, 255, 255, 0.9);
+      border: 1px solid #333;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      transition: all 0.2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+
+      /* テキスト選択を無効化するプロパティを追加 */
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+  }
+
+
+
+
+
+  .hidden {
+      display: none;
+  }
+
+  .flick-option:hover {
+      background-color: #e0e0e0;
+  }
+
+
+
+
+
+
+/*
+#info {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  color: #333;
+  font-family: Arial, sans-serif;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 10px;
+  border-radius: 5px;
+}
+*/
+#toggleControls {
+    position: absolute;
+    right: 10px;
+    margin-top: 5px;
+    padding: 5px 10px;
+    background-color: #f0f0f0;
+    border: 1px solid #ffffff;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: Arial, sans-serif;
+    color:
+}
+
+#toggleControls:hover {
+    background-color: #808080;
+}
+
+#loading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: Arial, sans-serif;
+    color: #333;
+
+    #controls {
+      position: absolute;
+      top: 10px;            /* 上端から10pxの位置 */
+      left: 50%;           /* 左端から50%の位置 */
+      transform: translateX(-50%); /* 要素の幅の半分だけ左に移動 */
+      display: flex;
+      gap: 10px;
+    }
+/*
+#controls button {
+    padding: 8px 16px;
+    background-color: #ffffff;
+    border: 1px solid #333;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: Arial, sans-serif;
+}
+
+#controls button:hover {
+    background-color: #f0f0f0;
+}
+
+.rotation-controls {
+    margin-top: 10px;
+    display: flex;
+    gap: 5px;
+}
+
+.rotation-controls button {
+    padding: 5px 10px;
+    background-color: #e0e0e0;
+    border: 1px solid #333;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.rotation-controls button:hover {
+    background-color: #d0d0d0;
+}
+*/

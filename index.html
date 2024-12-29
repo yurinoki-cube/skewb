@@ -1,0 +1,2524 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Skewb 3D Viewer</title>
+    <link rel="stylesheet" href="main.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #c0c0c0;
+        }
+
+        canvas {
+            display: block;
+        }
+
+
+
+    </style>
+</head>
+<body>
+<!--    <div id="info">
+      <button id="toggleControls" class="btn btn-secondary">回転制御: ON</button>
+    </div>
+-->
+      <button id="toggleControls" class="btn btn-secondary">回転制御: ON</button>
+
+    <div id="drag-overlay" class="hidden"></div>
+<!--
+    <div id="controls">
+       <button id="rotateF">F</button>
+       <button id="rotateFPrime">F'</button>
+       <button id="rotateR">R</button>
+       <button id="rotateRPrime">R'</button>
+       <button id="rotateB">B</button>
+       <button id="rotateBPrime">B'</button>
+       <button id="rotateL">L</button>
+       <button id="rotateLPrime">L'</button>
+       <button id="rotateLittleF">f</button>
+       <button id="rotateLittleFPrime">f'</button>
+       <button id="rotateLittleR">r</button>
+       <button id="rotateLittleRPrime">r'</button>
+       <button id="rotateLittleB">b</button>
+       <button id="rotateLittleBPrime">b'</button>
+       <button id="rotateLittleL">l</button>
+       <button id="rotateLittleLPrime">l'</button>
+    </div>
+    <div class="rotation-controls">
+        <button id="rotateX">x</button>
+        <button id="rotateXPrime">x'</button>
+        <button id="rotateX2">x2</button>
+        <button id="rotateY">y</button>
+        <button id="rotateYPrime">y'</button>
+        <button id="rotateY2">y2</button>
+        <button id="rotateZ">z</button>
+        <button id="rotateZPrime">z'</button>
+        <button id="rotateZ2">z2</button>
+    </div>
+ -->
+    <div id="loading">Loading...</div>
+
+    <div id="flick-control">
+        <div id="flick-button" class="flick-circle">
+          <div id="flick-options" class="hidden">
+              <div class="flick-option" data-move="B" style="top: -60px;">B</div>         <!-- 上 -->
+              <div class="flick-option" data-move="B'" style="top: -45px; right: -37.5px;">B'</div>
+              <div class="flick-option" data-move="r" style="right: -52px;">r</div>       <!-- 右 -->
+              <div class="flick-option" data-move="r'" style="bottom: -37.5px; right: -37.5px;">r'</div>
+              <div class="flick-option" data-move="R" style="bottom: -52px;">R</div>      <!-- 下 -->
+              <div class="flick-option" data-move="R'" style="bottom: -37.5px; left: -45px;">R'</div>
+              <div class="flick-option" data-move="b" style="left: -60px;">b</div>        <!-- 左 -->
+              <div class="flick-option" data-move="b'" style="top: -45px; left: -45px;">b'</div>
+          </div>
+        </div>
+    </div>
+
+
+
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdnjs.cloudflare.com/ajax/libs/three.js/0.162.0/three.module.min.js",
+            "three/examples/jsm/controls/TrackballControls": "https://unpkg.com/three@0.162.0/examples/jsm/controls/TrackballControls.js"
+        }
+    }
+    </script>
+
+    <script type="module">
+    import * as THREE from 'three';
+    import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls';
+
+
+
+
+/*
+
+    // 回転軸の定義を追加
+    const AXIS_VECTORS = {
+       x: [1, 0, 0],
+       y: [0, 1, 0],
+       z: [0, 0, 1],
+       F: [1, 1, 1],
+       R: [1, 1, -1],
+       B: [-1, 1, -1],
+       L: [-1, 1, 1],
+       f: [1, -1, 1],
+       r: [1, -1, -1],
+       b: [-1, -1, -1],
+       l: [-1, -1, 1]
+    };
+
+    const AXIS_COLORS = {
+       x: 0xff0000,  // 赤
+       y: 0x00ff00,  // 緑
+       z: 0x0000ff,  // 青
+       F: 0xff00ff,  // マゼンタ
+       R: 0x00ffff,  // シアン
+       B: 0xffff00,  // 黄
+       L: 0xff8000,  // オレンジ
+       f: 0x8000ff,  // 紫
+       r: 0x00ff80,  // ライトグリーン
+       b: 0xff0080,  // ピンク
+       l: 0x80ff00   // ライム
+    };
+
+    function createAxisLine(vector, color) {
+       const points = [];
+       const length = 3;
+       for(let i = -length; i <= length; i += 0.2) {
+           points.push(i * vector[0], i * vector[1], i * vector[2]);
+       }
+
+       const geometry = new THREE.BufferGeometry();
+       geometry.setAttribute('position', new THREE.Float32BufferAttribute(points, 3));
+
+       const material = new THREE.LineDashedMaterial({
+           color: color,
+           dashSize: 0.2,
+           gapSize: 0.1
+       });
+
+       const line = new THREE.LineSegments(geometry, material);
+       line.computeLineDistances();
+       return line;
+    }
+
+    function addAxisLines() {
+       Object.entries(AXIS_VECTORS).forEach(([axis, vector]) => {
+           const line = createAxisLine(vector, AXIS_COLORS[axis]);
+           scene.add(line);
+       });
+    }
+
+
+
+
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// 色の定義
+const COLORS = {
+   BLUE: 0x0051BA,
+   GREEN: 0x009E60,
+   RED: 0xE41E25,
+   ORANGE: 0xFF8C00,
+   YELLOW: 0xFFD500,
+   WHITE: 0xFFFFFF,
+   BLACK: 0x000000,
+   GRAY: 0xB8B8B8
+};
+
+
+//定義関連
+//コーナー
+const CORNERS = {
+    UF: 'UF',
+    UL: 'UL',
+    UR: 'UR',
+    UB: 'UB',
+    DF: 'DF',
+    DL: 'DL',
+    DR: 'DR',
+    DB: 'DB'
+};
+
+//センター
+const CENTERS = {
+    U: 'U',
+    D: 'D',
+    FL: 'FL',
+    BR: 'BR',
+    FR: 'FR',
+    BL: 'BL'
+};
+
+// 向きを定義
+const ORIENTATIONS = {
+    NEUTRAL: 0,    // 0度回転
+    CLOCKWISE: 1,  // 120度回転
+    COUNTER: 2     // 240度回転
+};
+
+//回転軸
+const VECTORS = {
+    F: [1, 1, 1],
+    R: [1, 1, -1],
+    B: [-1, 1, -1],
+    L: [-1, 1, 1],
+    f: [1, -1, 1],
+    r: [1, -1, -1],
+    b: [-1, -1, -1],
+    l: [-1, -1, 1],
+    x: [1, 0, 0],
+    y: [0, 1, 0],
+    z: [0, 0, 1]
+};
+
+// Skewbの状態を管理するクラス
+class SkewbState {
+  constructor() {
+      // 各位置にあるピースと向きを管理
+      this.PIECE_GROUPS = {
+          UF: { piece: CORNERS.UF, orientation: ORIENTATIONS.NEUTRAL },
+          UL: { piece: CORNERS.UL, orientation: ORIENTATIONS.NEUTRAL },
+          UR: { piece: CORNERS.UR, orientation: ORIENTATIONS.NEUTRAL },
+          UB: { piece: CORNERS.UB, orientation: ORIENTATIONS.NEUTRAL },
+          DF: { piece: CORNERS.DF, orientation: ORIENTATIONS.NEUTRAL },
+          DL: { piece: CORNERS.DL, orientation: ORIENTATIONS.NEUTRAL },
+          DR: { piece: CORNERS.DR, orientation: ORIENTATIONS.NEUTRAL },
+          DB: { piece: CORNERS.DB, orientation: ORIENTATIONS.NEUTRAL },
+          U: { piece: CENTERS.U, orientation: ORIENTATIONS.NEUTRAL },
+          D: { piece: CENTERS.D, orientation: ORIENTATIONS.NEUTRAL },
+          FL: { piece: CENTERS.FL, orientation: ORIENTATIONS.NEUTRAL },
+          BR: { piece: CENTERS.BR, orientation: ORIENTATIONS.NEUTRAL },
+          FR: { piece: CENTERS.FR, orientation: ORIENTATIONS.NEUTRAL },
+          BL: { piece: CENTERS.BL, orientation: ORIENTATIONS.NEUTRAL }
+      };
+  }
+
+
+  //3つのピースを循環させる関数
+  cycleThreePieces(p1, p2, p3, isClockwise = true) {
+      let tmp = this.PIECE_GROUPS[p1].piece;
+      if (isClockwise) {
+          this.PIECE_GROUPS[p1].piece = this.PIECE_GROUPS[p2].piece;
+          this.PIECE_GROUPS[p2].piece = this.PIECE_GROUPS[p3].piece;
+          this.PIECE_GROUPS[p3].piece = tmp;
+      } else {
+          this.PIECE_GROUPS[p1].piece = this.PIECE_GROUPS[p3].piece;
+          this.PIECE_GROUPS[p3].piece = this.PIECE_GROUPS[p2].piece;
+          this.PIECE_GROUPS[p2].piece = tmp;
+      }
+  }
+
+  //3つのピースの向きを更新する関数
+  cycleThreeOrientations(p1, p2, p3, isClockwise = true) {
+      let tmp = this.PIECE_GROUPS[p1].orientation;
+      const delta = isClockwise ? -1 : 1;
+
+      if (isClockwise) {
+          this.PIECE_GROUPS[p1].orientation = adjustValue(this.PIECE_GROUPS[p2].orientation + delta);
+          this.PIECE_GROUPS[p2].orientation = adjustValue(this.PIECE_GROUPS[p3].orientation + delta);
+          this.PIECE_GROUPS[p3].orientation = adjustValue(tmp + delta);
+      } else {
+          this.PIECE_GROUPS[p1].orientation = adjustValue(this.PIECE_GROUPS[p3].orientation + delta);
+          this.PIECE_GROUPS[p3].orientation = adjustValue(this.PIECE_GROUPS[p2].orientation + delta);
+          this.PIECE_GROUPS[p2].orientation = adjustValue(tmp + delta);
+      }
+  }
+
+  // 単一の回転操作を実行
+  executeRotation(fixedCorner, centers, corners, isClockwise) {
+      // 固定コーナーの向きを更新
+      this.PIECE_GROUPS[fixedCorner].orientation =
+          adjustValue(this.PIECE_GROUPS[fixedCorner].orientation + (isClockwise ? 1 : -1));
+
+      // センターピースの回転
+      this.cycleThreePieces(...centers, isClockwise);
+
+      // コーナーピースの回転と向きの更新
+      this.cycleThreePieces(...corners, isClockwise);
+      this.cycleThreeOrientations(...corners, isClockwise);
+  }
+
+  // メイン回転関数
+      applyMove(move, angle) {
+          const isClockwise = angle === -120;
+          const rotationConfig = {
+              F: {
+                  fixedCorner: 'UF',
+                  centers: ['U', 'FL', 'FR'],
+                  corners: ['UR', 'UL', 'DF']
+              },
+              R: {
+                  fixedCorner: 'UR',
+                  centers: ['U', 'FR', 'BR'],
+                  corners: ['UF', 'DR', 'UB']
+              },
+              B: {
+                  fixedCorner: 'UB',
+                  centers: ['U', 'BR', 'BL'],
+                  corners: ['UR', 'DB', 'UL']
+              },
+              L: {
+                  fixedCorner: 'UL',
+                  centers: ['U', 'BL', 'FL'],
+                  corners: ['UF', 'UB', 'DL']
+              },
+              f: {
+                  fixedCorner: 'DF',
+                  centers: ['D', 'FR', 'FL'],
+                  corners: ['DR', 'UF', 'DL']
+              },
+              r: {
+                  fixedCorner: 'DR',
+                  centers: ['D', 'BR', 'FR'],
+                  corners: ['DB', 'UR', 'DF']
+              },
+              b: {
+                  fixedCorner: 'DB',
+                  centers: ['D', 'BL', 'BR'],
+                  corners: ['DL', 'UB', 'DR']
+              },
+              l: {
+                  fixedCorner: 'DL',
+                  centers: ['D', 'FL', 'BL'],
+                  corners: ['DF', 'UL', 'DB']
+              }
+          };
+
+          const config = rotationConfig[move];
+          if (config) {
+              this.executeRotation(
+                  config.fixedCorner,
+                  config.centers,
+                  config.corners,
+                  isClockwise
+              );
+          }
+      }
+
+
+
+      getRotationNotation(axis, angle) {
+          switch (angle) {
+              case -90:
+                  return axis;
+              case 90:
+                  return `${axis}'`;
+              case 180:
+              case -180:
+                  return `${axis}2`;
+              default:
+                  return 'invalid angle';
+          }
+      }
+
+
+
+      // キューブ全体の回転を状態に適用
+        applyRotation(axis, angle) {
+            const rotations = this.getRotationNotation(axis, angle);
+            let tmp;
+                switch (rotations) {
+                    case 'x':
+                    // コーナーの位置の更新
+                    tmp=this.PIECE_GROUPS.UF.piece;
+                    this.PIECE_GROUPS.UF.piece = this.PIECE_GROUPS.DF.piece;
+                    this.PIECE_GROUPS.DF.piece = this.PIECE_GROUPS.DR.piece;
+                    this.PIECE_GROUPS.DR.piece = this.PIECE_GROUPS.UR.piece;
+                    this.PIECE_GROUPS.UR.piece = tmp;
+
+                    tmp=this.PIECE_GROUPS.UB.piece;
+                    this.PIECE_GROUPS.UB.piece = this.PIECE_GROUPS.UL.piece;
+                    this.PIECE_GROUPS.UL.piece = this.PIECE_GROUPS.DL.piece;
+                    this.PIECE_GROUPS.DL.piece = this.PIECE_GROUPS.DB.piece;
+                    this.PIECE_GROUPS.DB.piece = tmp;
+
+                    // コーナーの向きの更新
+                    tmp=this.PIECE_GROUPS.UF.orientation;
+                    this.PIECE_GROUPS.UF.orientation = adjustValue(this.PIECE_GROUPS.DF.orientation-1);
+                    this.PIECE_GROUPS.DF.orientation = adjustValue(this.PIECE_GROUPS.DR.orientation+1);
+                    this.PIECE_GROUPS.DR.orientation = adjustValue(this.PIECE_GROUPS.UR.orientation-1);
+                    this.PIECE_GROUPS.UR.orientation = adjustValue(tmp+1);
+
+                    tmp=this.PIECE_GROUPS.UB.orientation;
+                    this.PIECE_GROUPS.UB.orientation = adjustValue(this.PIECE_GROUPS.UL.orientation-1);
+                    this.PIECE_GROUPS.UL.orientation = adjustValue(this.PIECE_GROUPS.DL.orientation+1);
+                    this.PIECE_GROUPS.DL.orientation = adjustValue(this.PIECE_GROUPS.DB.orientation-1);
+                    this.PIECE_GROUPS.DB.orientation = adjustValue(tmp+1);
+
+                    // センターの位置の更新
+                    tmp=this.PIECE_GROUPS.U.piece
+                    this.PIECE_GROUPS.U.piece = this.PIECE_GROUPS.FL.piece;
+                    this.PIECE_GROUPS.FL.piece = this.PIECE_GROUPS.D.piece;
+                    this.PIECE_GROUPS.D.piece = this.PIECE_GROUPS.BR.piece;
+                    this.PIECE_GROUPS.BR.piece = tmp;
+    /*
+                    //回転軸補正
+                    const tempVector = {...this.ROTATION_VECTORS};
+                    this.ROTATION_VECTORS.F.vector = tempVector.f.vector;
+                    this.ROTATION_VECTORS.f.vector = tempVector.r.vector;
+                    this.ROTATION_VECTORS.r.vector = tempVector.R.vector;
+                    this.ROTATION_VECTORS.R.vector = tempVector.F.vector;
+                    this.ROTATION_VECTORS.B.vector = tempVector.L.vector;
+                    this.ROTATION_VECTORS.L.vector = tempVector.l.vector;
+                    this.ROTATION_VECTORS.l.vector = tempVector.b.vector;
+                    this.ROTATION_VECTORS.b.vector = tempVector.B.vector;
+*/
+                        break;
+                    case "x'":
+                    tmp=this.PIECE_GROUPS.UF.piece;
+                    this.PIECE_GROUPS.UF.piece = this.PIECE_GROUPS.UR.piece;
+                    this.PIECE_GROUPS.UR.piece = this.PIECE_GROUPS.DR.piece;
+                    this.PIECE_GROUPS.DR.piece = this.PIECE_GROUPS.DF.piece;
+                    this.PIECE_GROUPS.DF.piece = tmp;
+
+                    tmp=this.PIECE_GROUPS.UB.piece;
+                    this.PIECE_GROUPS.UB.piece = this.PIECE_GROUPS.DB.piece;
+                    this.PIECE_GROUPS.DB.piece = this.PIECE_GROUPS.DL.piece;
+                    this.PIECE_GROUPS.DL.piece = this.PIECE_GROUPS.UL.piece;
+                    this.PIECE_GROUPS.UL.piece = tmp;
+
+                    // コーナーの向きの更新
+                    tmp=this.PIECE_GROUPS.UF.orientation;
+                    this.PIECE_GROUPS.UF.orientation = adjustValue(this.PIECE_GROUPS.UR.orientation-1);
+                    this.PIECE_GROUPS.UR.orientation = adjustValue(this.PIECE_GROUPS.DR.orientation+1);
+                    this.PIECE_GROUPS.DR.orientation = adjustValue(this.PIECE_GROUPS.DF.orientation-1);
+                    this.PIECE_GROUPS.DF.orientation = adjustValue(tmp+1);
+
+                    tmp=this.PIECE_GROUPS.UB.orientation;
+                    this.PIECE_GROUPS.UB.orientation = adjustValue(this.PIECE_GROUPS.DB.orientation-1);
+                    this.PIECE_GROUPS.DB.orientation = adjustValue(this.PIECE_GROUPS.DL.orientation+1);
+                    this.PIECE_GROUPS.DL.orientation = adjustValue(this.PIECE_GROUPS.UL.orientation-1);
+                    this.PIECE_GROUPS.UL.orientation =adjustValue(tmp+1);
+
+                    // センターの位置の更新
+                    tmp=this.PIECE_GROUPS.U.piece;
+                    this.PIECE_GROUPS.U.piece = this.PIECE_GROUPS.BR.piece;
+                    this.PIECE_GROUPS.BR.piece = this.PIECE_GROUPS.D.piece;
+                    this.PIECE_GROUPS.D.piece = this.PIECE_GROUPS.FL.piece;
+                    this.PIECE_GROUPS.FL.piece = tmp;
+
+      /*
+                    //回転軸補正
+                    const tempVector = {...this.ROTATION_VECTORS};
+                    this.ROTATION_VECTORS.F.vector = tempVector.R.vector;
+                    this.ROTATION_VECTORS.R.vector = tempVector.r.vector;
+                    this.ROTATION_VECTORS.r.vector = tempVector.f.vector;
+                    this.ROTATION_VECTORS.f.vector = tempVector.F.vector;
+                    this.ROTATION_VECTORS.B.vector = tempVector.b.vector;
+                    this.ROTATION_VECTORS.b.vector = tempVector.l.vector;
+                    this.ROTATION_VECTORS.l.vector = tempVector.L.vector;
+                    this.ROTATION_VECTORS.L.vector = tempVector.B.vector;
+*/
+                        break;
+                        case "x2":
+                        //コーナー位置
+                        tmp=this.PIECE_GROUPS.UF.piece;
+                        this.PIECE_GROUPS.UF.piece = this.PIECE_GROUPS.DR.piece;
+                        this.PIECE_GROUPS.DR.piece = tmp;
+
+                        tmp=this.PIECE_GROUPS.UR.piece;
+                        this.PIECE_GROUPS.UR.piece = this.PIECE_GROUPS.DF.piece;
+                        this.PIECE_GROUPS.DF.piece = tmp;
+
+                        tmp=this.PIECE_GROUPS.UB.piece;
+                        this.PIECE_GROUPS.UB.piece = this.PIECE_GROUPS.DL.piece;
+                        this.PIECE_GROUPS.DL.piece = tmp;
+
+                        tmp=this.PIECE_GROUPS.UL.piece;
+                        this.PIECE_GROUPS.UL.piece = this.PIECE_GROUPS.DB.piece;
+                        this.PIECE_GROUPS.DB.piece = tmp;
+
+                        //コーナー向き
+                        tmp=this.PIECE_GROUPS.UF.orientation;
+                        this.PIECE_GROUPS.UF.orientation = this.PIECE_GROUPS.DR.orientation;
+                        this.PIECE_GROUPS.DR.orientation = tmp;
+
+                        tmp=this.PIECE_GROUPS.UR.orientation;
+                        this.PIECE_GROUPS.UR.orientation = this.PIECE_GROUPS.DF.orientation;
+                        this.PIECE_GROUPS.DF.orientation = tmp;
+
+                        tmp=this.PIECE_GROUPS.UB.orientation;
+                        this.PIECE_GROUPS.UB.orientation = this.PIECE_GROUPS.DL.orientation;
+                        this.PIECE_GROUPS.DL.orientation = tmp;
+
+                        tmp=this.PIECE_GROUPS.UL.orientation;
+                        this.PIECE_GROUPS.UL.orientation = this.PIECE_GROUPS.DB.orientation;
+                        this.PIECE_GROUPS.DB.orientation = tmp;
+
+                        // センターの位置の更新
+                        tmp=this.PIECE_GROUPS.U.piece;
+                        this.PIECE_GROUPS.U.piece = this.PIECE_GROUPS.D.piece;
+                        this.PIECE_GROUPS.D.piece = tmp;
+
+                        tmp=this.PIECE_GROUPS.BR.piece;
+                        this.PIECE_GROUPS.BR.piece = this.PIECE_GROUPS.FL.piece;
+                        this.PIECE_GROUPS.FL.piece = tmp;
+                        break;
+
+                    case 'y':
+                    // コーナーの位置の更新
+                    tmp=this.PIECE_GROUPS.UF.piece;
+                    this.PIECE_GROUPS.UF.piece = this.PIECE_GROUPS.UR.piece;
+                    this.PIECE_GROUPS.UR.piece = this.PIECE_GROUPS.UB.piece;
+                    this.PIECE_GROUPS.UB.piece = this.PIECE_GROUPS.UL.piece;
+                    this.PIECE_GROUPS.UL.piece = tmp;
+
+                    tmp=this.PIECE_GROUPS.DF.piece;
+                    this.PIECE_GROUPS.DF.piece = this.PIECE_GROUPS.DR.piece;
+                    this.PIECE_GROUPS.DR.piece = this.PIECE_GROUPS.DB.piece;
+                    this.PIECE_GROUPS.DB.piece = this.PIECE_GROUPS.DL.piece;
+                    this.PIECE_GROUPS.DL.piece = tmp;
+
+                    // コーナーの向きの更新
+                    tmp=this.PIECE_GROUPS.UF.orientation;
+                    this.PIECE_GROUPS.UF.orientation = adjustValue(this.PIECE_GROUPS.UR.orientation);
+                    this.PIECE_GROUPS.UR.orientation = adjustValue(this.PIECE_GROUPS.UB.orientation);
+                    this.PIECE_GROUPS.UB.orientation = adjustValue(this.PIECE_GROUPS.UL.orientation);
+                    this.PIECE_GROUPS.UL.orientation = adjustValue(tmp);
+
+                    tmp=this.PIECE_GROUPS.DF.orientation;
+                    this.PIECE_GROUPS.DF.orientation = adjustValue(this.PIECE_GROUPS.DR.orientation);
+                    this.PIECE_GROUPS.DR.orientation = adjustValue(this.PIECE_GROUPS.DB.orientation);
+                    this.PIECE_GROUPS.DB.orientation = adjustValue(this.PIECE_GROUPS.DL.orientation);
+                    this.PIECE_GROUPS.DL.orientation = adjustValue(tmp);
+
+
+                    // センターの位置の更新
+                    tmp=this.PIECE_GROUPS.FR.piece
+                    this.PIECE_GROUPS.FR.piece = this.PIECE_GROUPS.BR.piece;
+                    this.PIECE_GROUPS.BR.piece = this.PIECE_GROUPS.BL.piece;
+                    this.PIECE_GROUPS.BL.piece = this.PIECE_GROUPS.FL.piece;
+                    this.PIECE_GROUPS.FL.piece = tmp;
+
+                        break;
+                    case "y'":
+                    // コーナーの位置の更新
+                    tmp=this.PIECE_GROUPS.UF.piece;
+                    this.PIECE_GROUPS.UF.piece = this.PIECE_GROUPS.UL.piece;
+                    this.PIECE_GROUPS.UL.piece = this.PIECE_GROUPS.UB.piece;
+                    this.PIECE_GROUPS.UB.piece = this.PIECE_GROUPS.UR.piece;
+                    this.PIECE_GROUPS.UR.piece = tmp;
+
+                    tmp=this.PIECE_GROUPS.DF.piece;
+                    this.PIECE_GROUPS.DF.piece = this.PIECE_GROUPS.DL.piece;
+                    this.PIECE_GROUPS.DL.piece = this.PIECE_GROUPS.DB.piece;
+                    this.PIECE_GROUPS.DB.piece = this.PIECE_GROUPS.DR.piece;
+                    this.PIECE_GROUPS.DR.piece = tmp;
+
+                    // コーナーの向きの更新
+                    tmp=this.PIECE_GROUPS.UF.orientation;
+                    this.PIECE_GROUPS.UF.orientation = adjustValue(this.PIECE_GROUPS.UL.orientation);
+                    this.PIECE_GROUPS.UL.orientation = adjustValue(this.PIECE_GROUPS.UB.orientation);
+                    this.PIECE_GROUPS.UB.orientation = adjustValue(this.PIECE_GROUPS.UR.orientation);
+                    this.PIECE_GROUPS.UR.orientation = adjustValue(tmp);
+
+                    tmp=this.PIECE_GROUPS.DF.orientation;
+                    this.PIECE_GROUPS.DF.orientation = adjustValue(this.PIECE_GROUPS.DL.orientation);
+                    this.PIECE_GROUPS.DL.orientation = adjustValue(this.PIECE_GROUPS.DB.orientation);
+                    this.PIECE_GROUPS.DB.orientation = adjustValue(this.PIECE_GROUPS.DR.orientation);
+                    this.PIECE_GROUPS.DR.orientation = adjustValue(tmp);
+
+                    // センターの位置の更新
+                    tmp=this.PIECE_GROUPS.FR.piece
+                    this.PIECE_GROUPS.FR.piece = this.PIECE_GROUPS.FL.piece;
+                    this.PIECE_GROUPS.FL.piece = this.PIECE_GROUPS.BL.piece;
+                    this.PIECE_GROUPS.BL.piece = this.PIECE_GROUPS.BR.piece;
+                    this.PIECE_GROUPS.BR.piece = tmp;
+                        break;
+                    case 'y2':
+                    //コーナー位置
+                    tmp=this.PIECE_GROUPS.UF.piece;
+                    this.PIECE_GROUPS.UF.piece = this.PIECE_GROUPS.UB.piece;
+                    this.PIECE_GROUPS.UB.piece = tmp;
+
+                    tmp=this.PIECE_GROUPS.UR.piece;
+                    this.PIECE_GROUPS.UR.piece = this.PIECE_GROUPS.UL.piece;
+                    this.PIECE_GROUPS.UL.piece = tmp;
+
+                    tmp=this.PIECE_GROUPS.DF.piece;
+                    this.PIECE_GROUPS.DF.piece = this.PIECE_GROUPS.DB.piece;
+                    this.PIECE_GROUPS.DB.piece = tmp;
+
+                    tmp=this.PIECE_GROUPS.DR.piece;
+                    this.PIECE_GROUPS.DR.piece = this.PIECE_GROUPS.DL.piece;
+                    this.PIECE_GROUPS.DL.piece = tmp;
+
+                    //コーナー向き
+                    tmp=this.PIECE_GROUPS.UF.orientation;
+                    this.PIECE_GROUPS.UF.orientation = this.PIECE_GROUPS.UB.orientation;
+                    this.PIECE_GROUPS.UB.orientation = tmp;
+
+                    tmp=this.PIECE_GROUPS.UR.orientation;
+                    this.PIECE_GROUPS.UR.orientation = this.PIECE_GROUPS.UL.orientation;
+                    this.PIECE_GROUPS.UL.orientation = tmp;
+
+                    tmp=this.PIECE_GROUPS.DF.orientation;
+                    this.PIECE_GROUPS.DF.orientation = this.PIECE_GROUPS.DB.orientation;
+                    this.PIECE_GROUPS.DB.orientation = tmp;
+
+                    tmp=this.PIECE_GROUPS.DR.orientation;
+                    this.PIECE_GROUPS.DR.orientation = this.PIECE_GROUPS.DL.orientation;
+                    this.PIECE_GROUPS.DL.orientation = tmp;
+
+                    // センターの位置の更新
+                    tmp=this.PIECE_GROUPS.FR.piece;
+                    this.PIECE_GROUPS.FR.piece = this.PIECE_GROUPS.BL.piece;
+                    this.PIECE_GROUPS.BL.piece = tmp;
+
+                    tmp=this.PIECE_GROUPS.BR.piece;
+                    this.PIECE_GROUPS.BR.piece = this.PIECE_GROUPS.FL.piece;
+                    this.PIECE_GROUPS.FL.piece = tmp;
+
+                        break;
+                    case 'z':
+                    // コーナーの位置の更新
+                    tmp=this.PIECE_GROUPS.UF.piece;
+                    this.PIECE_GROUPS.UF.piece = this.PIECE_GROUPS.UL.piece;
+                    this.PIECE_GROUPS.UL.piece = this.PIECE_GROUPS.DL.piece;
+                    this.PIECE_GROUPS.DL.piece = this.PIECE_GROUPS.DF.piece;
+                    this.PIECE_GROUPS.DF.piece = tmp;
+
+                    tmp=this.PIECE_GROUPS.UR.piece;
+                    this.PIECE_GROUPS.UR.piece = this.PIECE_GROUPS.UB.piece;
+                    this.PIECE_GROUPS.UB.piece = this.PIECE_GROUPS.DB.piece;
+                    this.PIECE_GROUPS.DB.piece = this.PIECE_GROUPS.DR.piece;
+                    this.PIECE_GROUPS.DR.piece = tmp;
+
+                    // コーナーの向きの更新
+                    tmp=this.PIECE_GROUPS.UF.orientation;
+                    this.PIECE_GROUPS.UF.orientation = adjustValue(this.PIECE_GROUPS.UL.orientation+1);
+                    this.PIECE_GROUPS.UL.orientation = adjustValue(this.PIECE_GROUPS.DL.orientation-1);
+                    this.PIECE_GROUPS.DL.orientation = adjustValue(this.PIECE_GROUPS.DF.orientation+1);
+                    this.PIECE_GROUPS.DF.orientation = adjustValue(tmp-1);
+
+                    tmp=this.PIECE_GROUPS.UR.orientation;
+                    this.PIECE_GROUPS.UR.orientation = adjustValue(this.PIECE_GROUPS.UB.orientation+1);
+                    this.PIECE_GROUPS.UB.orientation = adjustValue(this.PIECE_GROUPS.DB.orientation-1);
+                    this.PIECE_GROUPS.DB.orientation = adjustValue(this.PIECE_GROUPS.DR.orientation+1);
+                    this.PIECE_GROUPS.DR.orientation = adjustValue(tmp-1);
+
+
+                    // センターの位置の更新
+                    tmp=this.PIECE_GROUPS.FR.piece
+                    this.PIECE_GROUPS.FR.piece = this.PIECE_GROUPS.U.piece;
+                    this.PIECE_GROUPS.U.piece = this.PIECE_GROUPS.BL.piece;
+                    this.PIECE_GROUPS.BL.piece = this.PIECE_GROUPS.D.piece;
+                    this.PIECE_GROUPS.D.piece = tmp;
+                        break;
+                    case "z'":
+                    // コーナーの位置の更新
+                    tmp=this.PIECE_GROUPS.UF.piece;
+                    this.PIECE_GROUPS.UF.piece = this.PIECE_GROUPS.DF.piece;
+                    this.PIECE_GROUPS.DF.piece = this.PIECE_GROUPS.DL.piece;
+                    this.PIECE_GROUPS.DL.piece = this.PIECE_GROUPS.UL.piece;
+                    this.PIECE_GROUPS.UL.piece = tmp;
+
+                    tmp=this.PIECE_GROUPS.UR.piece;
+                    this.PIECE_GROUPS.UR.piece = this.PIECE_GROUPS.DR.piece;
+                    this.PIECE_GROUPS.DR.piece = this.PIECE_GROUPS.DB.piece;
+                    this.PIECE_GROUPS.DB.piece = this.PIECE_GROUPS.UB.piece;
+                    this.PIECE_GROUPS.UB.piece = tmp;
+
+                    // コーナーの向きの更新
+                    tmp=this.PIECE_GROUPS.UF.orientation;
+                    this.PIECE_GROUPS.UF.orientation = adjustValue(this.PIECE_GROUPS.DF.orientation+1);
+                    this.PIECE_GROUPS.DF.orientation = adjustValue(this.PIECE_GROUPS.DL.orientation-1);
+                    this.PIECE_GROUPS.DL.orientation = adjustValue(this.PIECE_GROUPS.UL.orientation+1);
+                    this.PIECE_GROUPS.UL.orientation = adjustValue(tmp-1);
+
+                    tmp=this.PIECE_GROUPS.UR.orientation;
+                    this.PIECE_GROUPS.UR.orientation = adjustValue(this.PIECE_GROUPS.DR.orientation+1);
+                    this.PIECE_GROUPS.DR.orientation = adjustValue(this.PIECE_GROUPS.DB.orientation-1);
+                    this.PIECE_GROUPS.DB.orientation = adjustValue(this.PIECE_GROUPS.UB.orientation+1);
+                    this.PIECE_GROUPS.UB.orientation = adjustValue(tmp-1);
+
+
+                    // センターの位置の更新
+                    tmp=this.PIECE_GROUPS.FR.piece
+                    this.PIECE_GROUPS.FR.piece = this.PIECE_GROUPS.D.piece;
+                    this.PIECE_GROUPS.D.piece = this.PIECE_GROUPS.BL.piece;
+                    this.PIECE_GROUPS.BL.piece = this.PIECE_GROUPS.U.piece;
+                    this.PIECE_GROUPS.U.piece = tmp;
+
+                        break;
+                    case 'z2':
+                    //コーナー位置
+                    tmp=this.PIECE_GROUPS.UF.piece;
+                    this.PIECE_GROUPS.UF.piece = this.PIECE_GROUPS.DL.piece;
+                    this.PIECE_GROUPS.DL.piece = tmp;
+
+                    tmp=this.PIECE_GROUPS.UL.piece;
+                    this.PIECE_GROUPS.UL.piece = this.PIECE_GROUPS.DF.piece;
+                    this.PIECE_GROUPS.DF.piece = tmp;
+
+                    tmp=this.PIECE_GROUPS.UR.piece;
+                    this.PIECE_GROUPS.UR.piece = this.PIECE_GROUPS.DB.piece;
+                    this.PIECE_GROUPS.DB.piece = tmp;
+
+                    tmp=this.PIECE_GROUPS.UB.piece;
+                    this.PIECE_GROUPS.UB.piece = this.PIECE_GROUPS.DR.piece;
+                    this.PIECE_GROUPS.DR.piece = tmp;
+
+                    //コーナー向き
+                    tmp=this.PIECE_GROUPS.UF.orientation;
+                    this.PIECE_GROUPS.UF.orientation = this.PIECE_GROUPS.DL.orientation;
+                    this.PIECE_GROUPS.DL.orientation = tmp;
+
+                    tmp=this.PIECE_GROUPS.UL.orientation;
+                    this.PIECE_GROUPS.UL.orientation = this.PIECE_GROUPS.DF.orientation;
+                    this.PIECE_GROUPS.DF.orientation = tmp;
+
+                    tmp=this.PIECE_GROUPS.UR.orientation;
+                    this.PIECE_GROUPS.UR.orientation = this.PIECE_GROUPS.DB.orientation;
+                    this.PIECE_GROUPS.DB.orientation = tmp;
+
+                    tmp=this.PIECE_GROUPS.UB.orientation;
+                    this.PIECE_GROUPS.UB.orientation = this.PIECE_GROUPS.DR.orientation;
+                    this.PIECE_GROUPS.DR.orientation = tmp;
+
+
+                    // センターの位置の更新
+                    tmp=this.PIECE_GROUPS.FR.piece;
+                    this.PIECE_GROUPS.FR.piece = this.PIECE_GROUPS.BL.piece;
+                    this.PIECE_GROUPS.BL.piece = tmp;
+
+                    tmp=this.PIECE_GROUPS.U.piece;
+                    this.PIECE_GROUPS.U.piece = this.PIECE_GROUPS.D.piece;
+                    this.PIECE_GROUPS.D.piece = tmp;
+
+                        break;
+                }
+          }
+
+/*
+        // X軸周りの回転（90度）
+        rotateX(isClockwise) {
+            let tmp;
+            if (isClockwise) {
+              // コーナーの位置の更新
+              tmp=this.PIECE_GROUPS.UF.piece;
+              this.PIECE_GROUPS.UF.piece = this.PIECE_GROUPS.UR.piece;
+              this.PIECE_GROUPS.UR.piece = this.PIECE_GROUPS.DR.piece;
+              this.PIECE_GROUPS.DR.piece = this.PIECE_GROUPS.DF.piece;
+              this.PIECE_GROUPS.DF.piece = tmp;
+
+              tmp=this.PIECE_GROUPS.UB.piece;
+              this.PIECE_GROUPS.UB.piece = this.PIECE_GROUPS.DB.piece;
+              this.PIECE_GROUPS.DB.piece = this.PIECE_GROUPS.DL.piece;
+              this.PIECE_GROUPS.DL.piece = this.PIECE_GROUPS.UL.piece;
+              this.PIECE_GROUPS.UL.piece = tmp;
+
+              // コーナーの向きの更新
+              tmp=this.PIECE_GROUPS.UF.orientation;
+              this.PIECE_GROUPS.UF.orientation = adjustValue(this.PIECE_GROUPS.UR.orientation-1);
+              this.PIECE_GROUPS.UR.orientation = adjustValue(this.PIECE_GROUPS.DR.orientation+1);
+              this.PIECE_GROUPS.DR.orientation = adjustValue(this.PIECE_GROUPS.DF.orientation-1);
+              this.PIECE_GROUPS.DF.orientation = adjustValue(tmp+1);
+
+              tmp=this.PIECE_GROUPS.UB.orientation;
+              this.PIECE_GROUPS.UB.orientation = adjustValue(this.PIECE_GROUPS.DB.orientation-1);
+              this.PIECE_GROUPS.DB.orientation = adjustValue(this.PIECE_GROUPS.DL.orientation+1);
+              this.PIECE_GROUPS.DL.orientation = adjustValue(this.PIECE_GROUPS.UL.orientation-1);
+              this.PIECE_GROUPS.UL.orientation =adjustValue(tmp+1);
+
+              // センターの位置の更新
+              tmp=this.PIECE_GROUPS.U.piece;
+              this.PIECE_GROUPS.U.piece = this.PIECE_GROUPS.BR.piece;
+              this.PIECE_GROUPS.BR.piece = this.PIECE_GROUPS.D.piece;
+              this.PIECE_GROUPS.D.piece = this.PIECE_GROUPS.FL.piece;
+              this.PIECE_GROUPS.FL.piece = tmp;
+
+              //回転軸補正
+              const tempVector = {...this.ROTATION_VECTORS};
+              this.ROTATION_VECTORS.F.vector = tempVector.R.vector;
+              this.ROTATION_VECTORS.R.vector = tempVector.r.vector;
+              this.ROTATION_VECTORS.r.vector = tempVector.f.vector;
+              this.ROTATION_VECTORS.f.vector = tempVector.F.vector;
+              this.ROTATION_VECTORS.B.vector = tempVector.b.vector;
+              this.ROTATION_VECTORS.b.vector = tempVector.l.vector;
+              this.ROTATION_VECTORS.l.vector = tempVector.L.vector;
+              this.ROTATION_VECTORS.L.vector = tempVector.B.vector;
+
+            } else {
+                // 反時計回りの場合は逆の順序で更新
+                // コーナーの位置の更新
+                tmp=this.PIECE_GROUPS.UF.piece;
+                this.PIECE_GROUPS.UF.piece = this.PIECE_GROUPS.DF.piece;
+                this.PIECE_GROUPS.DF.piece = this.PIECE_GROUPS.DR.piece;
+                this.PIECE_GROUPS.DR.piece = this.PIECE_GROUPS.UR.piece;
+                this.PIECE_GROUPS.UR.piece = tmp;
+
+                tmp=this.PIECE_GROUPS.UB.piece;
+                this.PIECE_GROUPS.UB.piece = this.PIECE_GROUPS.UL.piece;
+                this.PIECE_GROUPS.UL.piece = this.PIECE_GROUPS.DL.piece;
+                this.PIECE_GROUPS.DL.piece = this.PIECE_GROUPS.DB.piece;
+                this.PIECE_GROUPS.DB.piece = tmp;
+
+                // コーナーの向きの更新
+                tmp=this.PIECE_GROUPS.UF.orientation;
+                this.PIECE_GROUPS.UF.orientation = adjustValue(this.PIECE_GROUPS.DF.orientation-1);
+                this.PIECE_GROUPS.DF.orientation = adjustValue(this.PIECE_GROUPS.DR.orientation+1);
+                this.PIECE_GROUPS.DR.orientation = adjustValue(this.PIECE_GROUPS.UR.orientation-1);
+                this.PIECE_GROUPS.UR.orientation = adjustValue(tmp+1);
+
+                tmp=this.PIECE_GROUPS.UB.orientation;
+                this.PIECE_GROUPS.UB.orientation = adjustValue(this.PIECE_GROUPS.UL.orientation-1);
+                this.PIECE_GROUPS.UL.orientation = adjustValue(this.PIECE_GROUPS.DL.orientation+1);
+                this.PIECE_GROUPS.DL.orientation = adjustValue(this.PIECE_GROUPS.DB.orientation-1);
+                this.PIECE_GROUPS.DB.orientation = adjustValue(tmp+1);
+
+                // センターの位置の更新
+                tmp=this.PIECE_GROUPS.U.piece
+                this.PIECE_GROUPS.U.piece = this.PIECE_GROUPS.FL.piece;
+                this.PIECE_GROUPS.FL.piece = this.PIECE_GROUPS.D.piece;
+                this.PIECE_GROUPS.D.piece = this.PIECE_GROUPS.BR.piece;
+                this.PIECE_GROUPS.BR.piece = tmp;
+
+                //回転軸補正
+                const tempVector = {...this.ROTATION_VECTORS};
+                this.ROTATION_VECTORS.F.vector = tempVector.f.vector;
+                this.ROTATION_VECTORS.f.vector = tempVector.r.vector;
+                this.ROTATION_VECTORS.r.vector = tempVector.R.vector;
+                this.ROTATION_VECTORS.R.vector = tempVector.F.vector;
+                this.ROTATION_VECTORS.B.vector = tempVector.L.vector;
+                this.ROTATION_VECTORS.L.vector = tempVector.l.vector;
+                this.ROTATION_VECTORS.l.vector = tempVector.b.vector;
+                this.ROTATION_VECTORS.b.vector = tempVector.B.vector;
+
+            }
+
+        }
+
+        // Y軸周りの回転（90度）
+        rotateY(isClockwise) {
+            const tmp = {...this.PIECE_GROUPS};
+            if (isClockwise) {
+                // コーナーの位置の更新
+                this.PIECE_GROUPS.UF.piece = tmp.UL.piece;
+                this.PIECE_GROUPS.UR.piece = tmp.UF.piece;
+                this.PIECE_GROUPS.UB.piece = tmp.UR.piece;
+                this.PIECE_GROUPS.UL.piece = tmp.UB.piece;
+                this.PIECE_GROUPS.DF.piece = tmp.DL.piece;
+                this.PIECE_GROUPS.DR.piece = tmp.DF.piece;
+                this.PIECE_GROUPS.DB.piece = tmp.DR.piece;
+                this.PIECE_GROUPS.DL.piece = tmp.DB.piece;
+
+                // センターの位置の更新
+                this.PIECE_GROUPS.FL.piece = tmp.BL.piece;
+                this.PIECE_GROUPS.FR.piece = tmp.FL.piece;
+                this.PIECE_GROUPS.BR.piece = tmp.FR.piece;
+                this.PIECE_GROUPS.BL.piece = tmp.BR.piece;
+                this.PIECE_GROUPS.U.piece = tmp.U.piece;
+                this.PIECE_GROUPS.D.piece = tmp.D.piece;
+            } else {
+                // 反時計回りの場合は逆の順序で更新
+                this.PIECE_GROUPS.UL.piece = tmp.UF.piece;
+                this.PIECE_GROUPS.UF.piece = tmp.UR.piece;
+                this.PIECE_GROUPS.UR.piece = tmp.UB.piece;
+                this.PIECE_GROUPS.UB.piece = tmp.UL.piece;
+                this.PIECE_GROUPS.DL.piece = tmp.DF.piece;
+                this.PIECE_GROUPS.DF.piece = tmp.DR.piece;
+                this.PIECE_GROUPS.DR.piece = tmp.DB.piece;
+                this.PIECE_GROUPS.DB.piece = tmp.DL.piece;
+
+                // センターの位置の更新
+                this.PIECE_GROUPS.BL.piece = tmp.FL.piece;
+                this.PIECE_GROUPS.FL.piece = tmp.FR.piece;
+                this.PIECE_GROUPS.FR.piece = tmp.BR.piece;
+                this.PIECE_GROUPS.BR.piece = tmp.BL.piece;
+                this.PIECE_GROUPS.U.piece = tmp.U.piece;
+                this.PIECE_GROUPS.D.piece = tmp.D.piece;
+            }
+        }
+
+        // Z軸周りの回転（90度）
+        rotateZ(isClockwise) {
+            const tmp = {...this.PIECE_GROUPS};
+            if (isClockwise) {
+                // コーナーの位置の更新
+                this.PIECE_GROUPS.UF.piece = tmp.UR.piece;
+                this.PIECE_GROUPS.UL.piece = tmp.UF.piece;
+                this.PIECE_GROUPS.UR.piece = tmp.DR.piece;
+                this.PIECE_GROUPS.DR.piece = tmp.DF.piece;
+                this.PIECE_GROUPS.DF.piece = tmp.DL.piece;
+                this.PIECE_GROUPS.DL.piece = tmp.UL.piece;
+                this.PIECE_GROUPS.UB.piece = tmp.UB.piece;
+                this.PIECE_GROUPS.DB.piece = tmp.DB.piece;
+
+                // センターの位置の更新
+                this.PIECE_GROUPS.FL.piece = tmp.FR.piece;
+                this.PIECE_GROUPS.FR.piece = tmp.FL.piece;
+                this.PIECE_GROUPS.BL.piece = tmp.BL.piece;
+                this.PIECE_GROUPS.BR.piece = tmp.BR.piece;
+                this.PIECE_GROUPS.U.piece = tmp.U.piece;
+                this.PIECE_GROUPS.D.piece = tmp.D.piece;
+            } else {
+                // 反時計回りの場合は逆の順序で更新
+                this.PIECE_GROUPS.UR.piece = tmp.UF.piece;
+                this.PIECE_GROUPS.UF.piece = tmp.UL.piece;
+                this.PIECE_GROUPS.DR.piece = tmp.UR.piece;
+                this.PIECE_GROUPS.DF.piece = tmp.DR.piece;
+                this.PIECE_GROUPS.DL.piece = tmp.DF.piece;
+                this.PIECE_GROUPS.UL.piece = tmp.DL.piece;
+                this.PIECE_GROUPS.UB.piece = tmp.UB.piece;
+                this.PIECE_GROUPS.DB.piece = tmp.DB.piece;
+
+                // センターの位置の更新
+                this.PIECE_GROUPS.FR.piece = tmp.FL.piece;
+                this.PIECE_GROUPS.FL.piece = tmp.FR.piece;
+                this.PIECE_GROUPS.BL.piece = tmp.BL.piece;
+                this.PIECE_GROUPS.BR.piece = tmp.BR.piece;
+                this.PIECE_GROUPS.U.piece = tmp.U.piece;
+                this.PIECE_GROUPS.D.piece = tmp.D.piece;
+            }
+        }
+*/
+
+  // 現在の状態をログ出力
+  printState() {
+      console.log('Current Skewb State:');
+      Object.entries(this.PIECE_GROUPS).forEach(([position, state]) => {
+          console.log(`Position ${position}: Piece ${state.piece} (Orientation: ${state.orientation})`);
+      });
+  }
+
+
+}
+
+// 値が0未満なら3を足し、3以上なら3を引く関数
+function adjustValue(value) {
+    if (value < 0) {
+        return value + 3;
+    } else if (value >= 3) {
+        return value - 3;
+    }
+    return value;
+}
+
+
+
+const skewb = new SkewbState();
+
+let scene, camera, renderer, controls;
+let isAnimating = false;
+let isControlEnabled = true;
+let animationGroup = new THREE.Group();
+
+let isDragging = false;
+let previousPosition = { x: 0, y: 0 };  // この行を追加
+let dominantAxis = null;  // 'x', 'y', 'z'のいずれかまたはnull
+
+
+const degToRad = (degrees) => degrees * (Math.PI / 180);
+
+// 回転に関連する軸とピースを取得する関数
+function getRotationAxisPieces(axis, skewb) {
+    const piecesConfig = {
+     F: () => [
+        skewb.PIECE_GROUPS.UF.piece,
+        skewb.PIECE_GROUPS.U.piece,
+        skewb.PIECE_GROUPS.FL.piece,
+        skewb.PIECE_GROUPS.FR.piece,
+        skewb.PIECE_GROUPS.UR.piece,
+        skewb.PIECE_GROUPS.DF.piece,
+        skewb.PIECE_GROUPS.UL.piece
+     ],
+     R: () => [
+        skewb.PIECE_GROUPS.UR.piece,
+        skewb.PIECE_GROUPS.U.piece,
+        skewb.PIECE_GROUPS.BR.piece,
+        skewb.PIECE_GROUPS.FR.piece,
+        skewb.PIECE_GROUPS.UF.piece,
+        skewb.PIECE_GROUPS.DR.piece,
+        skewb.PIECE_GROUPS.UB.piece
+     ],
+     B: () => [
+         skewb.PIECE_GROUPS.UB.piece,
+         skewb.PIECE_GROUPS.U.piece,
+         skewb.PIECE_GROUPS.BR.piece,
+         skewb.PIECE_GROUPS.BL.piece,
+         skewb.PIECE_GROUPS.UR.piece,
+         skewb.PIECE_GROUPS.DB.piece,
+         skewb.PIECE_GROUPS.UL.piece
+     ],
+     L: () => [
+         skewb.PIECE_GROUPS.UL.piece,
+         skewb.PIECE_GROUPS.U.piece,
+         skewb.PIECE_GROUPS.FL.piece,
+         skewb.PIECE_GROUPS.BL.piece,
+         skewb.PIECE_GROUPS.UB.piece,
+         skewb.PIECE_GROUPS.DL.piece,
+         skewb.PIECE_GROUPS.UF.piece
+     ],
+     f: () => [
+         skewb.PIECE_GROUPS.DF.piece,
+         skewb.PIECE_GROUPS.D.piece,
+         skewb.PIECE_GROUPS.FL.piece,
+         skewb.PIECE_GROUPS.FR.piece,
+         skewb.PIECE_GROUPS.DR.piece,
+         skewb.PIECE_GROUPS.UF.piece,
+         skewb.PIECE_GROUPS.DL.piece
+     ],
+     r: () => [
+         skewb.PIECE_GROUPS.DR.piece,
+         skewb.PIECE_GROUPS.D.piece,
+         skewb.PIECE_GROUPS.BR.piece,
+         skewb.PIECE_GROUPS.FR.piece,
+         skewb.PIECE_GROUPS.DF.piece,
+         skewb.PIECE_GROUPS.UR.piece,
+         skewb.PIECE_GROUPS.DB.piece
+     ],
+     b: () => [
+         skewb.PIECE_GROUPS.DB.piece,
+         skewb.PIECE_GROUPS.D.piece,
+         skewb.PIECE_GROUPS.BR.piece,
+         skewb.PIECE_GROUPS.BL.piece,
+         skewb.PIECE_GROUPS.DR.piece,
+         skewb.PIECE_GROUPS.UB.piece,
+         skewb.PIECE_GROUPS.DL.piece
+     ],
+     l: () => [
+         skewb.PIECE_GROUPS.DL.piece,
+         skewb.PIECE_GROUPS.D.piece,
+         skewb.PIECE_GROUPS.FL.piece,
+         skewb.PIECE_GROUPS.BL.piece,
+         skewb.PIECE_GROUPS.DB.piece,
+         skewb.PIECE_GROUPS.UL.piece,
+         skewb.PIECE_GROUPS.DF.piece
+     ],
+     x: () => [
+       skewb.PIECE_GROUPS.UF.piece,
+       skewb.PIECE_GROUPS.UL.piece,
+       skewb.PIECE_GROUPS.UR.piece,
+       skewb.PIECE_GROUPS.UB.piece,
+       skewb.PIECE_GROUPS.DF.piece,
+       skewb.PIECE_GROUPS.DL.piece,
+       skewb.PIECE_GROUPS.DR.piece,
+       skewb.PIECE_GROUPS.DB.piece,
+       skewb.PIECE_GROUPS.U.piece,
+       skewb.PIECE_GROUPS.D.piece,
+       skewb.PIECE_GROUPS.FL.piece,
+       skewb.PIECE_GROUPS.BR.piece,
+       skewb.PIECE_GROUPS.FR.piece,
+       skewb.PIECE_GROUPS.BL.piece
+     ],
+     y: () => [
+       skewb.PIECE_GROUPS.UF.piece,
+       skewb.PIECE_GROUPS.UL.piece,
+       skewb.PIECE_GROUPS.UR.piece,
+       skewb.PIECE_GROUPS.UB.piece,
+       skewb.PIECE_GROUPS.DF.piece,
+       skewb.PIECE_GROUPS.DL.piece,
+       skewb.PIECE_GROUPS.DR.piece,
+       skewb.PIECE_GROUPS.DB.piece,
+       skewb.PIECE_GROUPS.U.piece,
+       skewb.PIECE_GROUPS.D.piece,
+       skewb.PIECE_GROUPS.FL.piece,
+       skewb.PIECE_GROUPS.BR.piece,
+       skewb.PIECE_GROUPS.FR.piece,
+       skewb.PIECE_GROUPS.BL.piece
+     ],
+     z: () => [
+       skewb.PIECE_GROUPS.UF.piece,
+       skewb.PIECE_GROUPS.UL.piece,
+       skewb.PIECE_GROUPS.UR.piece,
+       skewb.PIECE_GROUPS.UB.piece,
+       skewb.PIECE_GROUPS.DF.piece,
+       skewb.PIECE_GROUPS.DL.piece,
+       skewb.PIECE_GROUPS.DR.piece,
+       skewb.PIECE_GROUPS.DB.piece,
+       skewb.PIECE_GROUPS.U.piece,
+       skewb.PIECE_GROUPS.D.piece,
+       skewb.PIECE_GROUPS.FL.piece,
+       skewb.PIECE_GROUPS.BR.piece,
+       skewb.PIECE_GROUPS.FR.piece,
+       skewb.PIECE_GROUPS.BL.piece
+     ]
+
+    };
+console.log(piecesConfig[axis]());
+    return {
+//       vector: skewb.ROTATION_VECTORS[axis],
+       pieces: piecesConfig[axis]()
+    };
+}
+
+// 回転行列を取得する関数を修正
+
+/*
+function getRotationMatrix(axis, angle) {
+    const rad = degToRad(angle);
+
+    // 1. cubeGroupの現在の回転を取得
+    const cubeRotation = new THREE.Matrix4().makeRotationFromQuaternion(cubeGroup.quaternion);
+
+    // 2. 基本の回転軸ベクトルを取得
+    const [x, y, z] = skewb.ROTATION_VECTORS[axis].vector;
+    const baseAxisVector = new THREE.Vector3(x, y, z).normalize();
+
+    // 3. 回転軸をcubeGroupの回転に応じて変換
+    const transformedAxis = baseAxisVector.clone()
+        .applyMatrix4(cubeRotation);
+
+    // 4. 変換された軸で回転行列を作成
+    const rotationMatrix = new THREE.Matrix4();
+    rotationMatrix.makeRotationAxis(transformedAxis, rad);
+
+    return rotationMatrix;
+}
+
+*/
+
+
+function getRotationMatrix(axis, angle) {
+    const rad = degToRad(angle);
+    const [x, y, z] = VECTORS[axis];
+//    const [x, y, z] = skewb.ROTATION_VECTORS[axis].vector;
+    const axisVector = new THREE.Vector3(x, y, z)
+    .normalize();
+//    .applyQuaternion(cubeGroup.quaternion);
+    const rotationMatrix = new THREE.Matrix4();
+    rotationMatrix.makeRotationAxis(axisVector, rad);
+    return rotationMatrix;
+}
+
+// 回転アニメーションを実行する関数
+function rotateGroup(axis, angle) {
+    if (isAnimating) return;
+    isAnimating = true;
+skewb.printState();
+    // アニメーショングループをクリア
+    while(animationGroup.children.length > 0) {
+//      cubeGroup.attach(animationGroup.children[0]);
+      scene.attach(animationGroup.children[0]);
+    }
+
+    // 現在の状態に基づいて回転軸の情報を取得
+    const rotationAxis = getRotationAxisPieces(axis, skewb);
+/*
+    // 対象のピースを見つけて追加
+    const targetPieces = cubeGroup.children.filter(child =>
+        rotationAxis.pieces.includes(child.userData.group)
+    );
+*/
+
+    // 対象のピースを見つけて追加
+    const targetPieces = scene.children.filter(child =>
+      rotationAxis.pieces.includes(child.userData.group)
+    );
+
+    targetPieces.forEach(piece => {
+      piece.updateMatrix();
+      animationGroup.attach(piece);
+    });
+
+//    cubeGroup.add(animationGroup);
+    scene.add(animationGroup);
+
+    // アニメーションの設定
+    const duration = 100;
+    const startTime = Date.now();
+    const rotationMatrix = getRotationMatrix(axis, angle);
+
+    // 四元数の準備
+    const startQuaternion = new THREE.Quaternion().setFromRotationMatrix(animationGroup.matrix);
+    const endQuaternion = new THREE.Quaternion();
+    const resultQuaternion = new THREE.Quaternion();
+
+    endQuaternion.multiplyQuaternions(
+      new THREE.Quaternion().setFromRotationMatrix(rotationMatrix),
+      startQuaternion
+    );
+
+    function update() {
+      const currentTime = Date.now();
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const easeProgress = 1 - Math.cos((progress * Math.PI) / 2);
+
+      resultQuaternion.slerpQuaternions(startQuaternion, endQuaternion, easeProgress);
+
+      const currentMatrix = new THREE.Matrix4();
+      currentMatrix.makeRotationFromQuaternion(resultQuaternion);
+      animationGroup.setRotationFromMatrix(currentMatrix);
+
+      if (progress < 1) {
+        requestAnimationFrame(update);
+      } else {
+//        cubeGroup.updateMatrixWorld();
+        scene.updateMatrixWorld();
+        targetPieces.forEach(piece => {
+          const worldMatrix = piece.matrixWorld.clone();
+//          cubeGroup.attach(piece);
+          scene.attach(piece);
+          piece.matrix.copy(worldMatrix);
+//          piece.matrix.premultiply(new THREE.Matrix4().copy(cubeGroup.matrix).invert());
+          piece.matrix.premultiply(new THREE.Matrix4().copy(scene.matrix).invert());
+          piece.matrixAutoUpdate = false;
+        });
+        animationGroup.clear();
+        skewb.applyMove(axis, angle);
+        skewb.printState();
+        isAnimating = false;
+      }
+    }
+    update();
+
+}
+/*
+function rotateCube(axis, angle) {
+    if (isAnimating) return;
+    isAnimating = true;
+
+    const startRotation = cubeGroup.rotation.clone();
+    const targetRotation = startRotation.clone();
+    const angleRad = degToRad(angle);
+
+    // 目標の回転角度を設定
+    switch(axis) {
+        case 'x':
+            targetRotation.x += angleRad;
+            break;
+        case 'y':
+            targetRotation.y += angleRad;
+            break;
+        case 'z':
+            targetRotation.z += angleRad;
+            break;
+    }
+    // 回転ベクトルを更新
+// skewb.updateRotationVectors(rotationMatrix);
+
+    // アニメーションの設定
+    const duration = 100;
+    const startTime = Date.now();
+
+    function update() {
+        const currentTime = Date.now();
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+
+        // イージング関数
+        const easeProgress = 1 - Math.cos((progress * Math.PI) / 2);
+
+        // 現在の回転を計算
+        cubeGroup.rotation.x = startRotation.x + (targetRotation.x - startRotation.x) * easeProgress;
+        cubeGroup.rotation.y = startRotation.y + (targetRotation.y - startRotation.y) * easeProgress;
+        cubeGroup.rotation.z = startRotation.z + (targetRotation.z - startRotation.z) * easeProgress;
+
+        if (progress < 1) {
+            requestAnimationFrame(update);
+        } else {
+            // 回転を正規化
+            cubeGroup.rotation.x = normalizeAngle(targetRotation.x);
+            cubeGroup.rotation.y = normalizeAngle(targetRotation.y);
+            cubeGroup.rotation.z = normalizeAngle(targetRotation.z);
+            isAnimating = false;
+
+
+        }
+    }
+
+    update();
+
+    // 状態を更新
+    skewb.applyRotation(axis, angle);
+    skewb.printState();
+
+}
+
+*/
+
+/*
+function rotateCube(axis, angle) {
+    if (isAnimating) return;
+    isAnimating = true;
+
+    const startRotation = cubeGroup.rotation.clone();
+    const targetRotation = startRotation.clone();
+    const angleRad = degToRad(angle);
+
+    // 回転行列を作成
+    const baseRotationMatrix = new THREE.Matrix4();
+    switch(axis) {
+        case 'x':
+            baseRotationMatrix.makeRotationX(angleRad);
+            targetRotation.x += angleRad;
+            break;
+        case 'y':
+            baseRotationMatrix.makeRotationY(angleRad);
+            targetRotation.y += angleRad;
+            break;
+        case 'z':
+            baseRotationMatrix.makeRotationZ(angleRad);
+            targetRotation.z += angleRad;
+            break;
+    }
+
+    // 回転ベクトルを更新
+    skewb.updateRotationVectors(baseRotationMatrix);
+
+    // アニメーションの設定
+    const duration = 100;
+    const startTime = Date.now();
+
+    function update() {
+        const currentTime = Date.now();
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+
+        // イージング関数
+        const easeProgress = 1 - Math.cos((progress * Math.PI) / 2);
+
+        // 現在の回転を計算
+        cubeGroup.rotation.x = startRotation.x + (targetRotation.x - startRotation.x) * easeProgress;
+        cubeGroup.rotation.y = startRotation.y + (targetRotation.y - startRotation.y) * easeProgress;
+        cubeGroup.rotation.z = startRotation.z + (targetRotation.z - startRotation.z) * easeProgress;
+
+        if (progress < 1) {
+            requestAnimationFrame(update);
+        } else {
+            // 回転を正規化
+            cubeGroup.rotation.x = normalizeAngle(targetRotation.x);
+            cubeGroup.rotation.y = normalizeAngle(targetRotation.y);
+            cubeGroup.rotation.z = normalizeAngle(targetRotation.z);
+            isAnimating = false;
+        }
+    }
+
+    update();
+
+    // 状態を更新
+    skewb.applyRotation(axis, angle);
+    skewb.printState();
+}
+*/
+
+
+function rotateCube(axis, angle) {
+    if (isAnimating) return;
+    isAnimating = true;
+        // アニメーショングループをクリア
+      while(animationGroup.children.length > 0) {
+        scene.attach(animationGroup.children[0]);
+      }
+
+      // 現在の状態に基づいて回転軸の情報を取得
+      const rotationAxis = getRotationAxisPieces(axis, skewb);
+
+      // 対象のピースを見つけて追加
+      const targetPieces = scene.children.filter(child =>
+        rotationAxis.pieces.includes(child.userData.group)
+      );
+
+      targetPieces.forEach(piece => {
+        piece.updateMatrix();
+        animationGroup.attach(piece);
+      });
+
+    scene.add(animationGroup);
+
+
+        // アニメーションの設定
+        const duration = 100;
+        const startTime = Date.now();
+        const rotationMatrix = getRotationMatrix(axis, angle);
+
+        // 四元数の準備
+        const startQuaternion = new THREE.Quaternion().setFromRotationMatrix(animationGroup.matrix);
+        const endQuaternion = new THREE.Quaternion();
+        const resultQuaternion = new THREE.Quaternion();
+
+        endQuaternion.multiplyQuaternions(
+          new THREE.Quaternion().setFromRotationMatrix(rotationMatrix),
+          startQuaternion
+        );
+
+    function update() {
+        const currentTime = Date.now();
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+
+        // イージング関数
+        const easeProgress = 1 - Math.cos((progress * Math.PI) / 2);
+        // 開始と終了の四元数間を補間
+               resultQuaternion.slerpQuaternions(startQuaternion, endQuaternion, easeProgress);
+
+        const currentMatrix = new THREE.Matrix4();
+        currentMatrix.makeRotationFromQuaternion(resultQuaternion);
+        animationGroup.setRotationFromMatrix(currentMatrix);
+
+        if (progress < 1) {
+            requestAnimationFrame(update);
+        } else {
+            scene.updateMatrixWorld();
+            targetPieces.forEach(piece => {
+              const worldMatrix = piece.matrixWorld.clone();
+              scene.attach(piece);
+              piece.matrix.copy(worldMatrix);
+              piece.matrix.premultiply(new THREE.Matrix4().copy(scene.matrix).invert());
+              piece.matrixAutoUpdate = false;
+            });
+            animationGroup.clear();
+            skewb.applyRotation(axis, angle);
+            skewb.printState();
+            isAnimating = false;
+          }
+        }
+    update();
+
+}
+
+
+// 角度を-PI〜PIの範囲に正規化する関数
+function normalizeAngle(angle) {
+    while (angle > Math.PI) angle -= 2 * Math.PI;
+    while (angle < -Math.PI) angle += 2 * Math.PI;
+    return angle;
+}
+
+
+
+
+function init() {
+    // シーンの作成
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xf5f5f5);
+//    scene.add(cubeGroup);
+
+    // カメラの設定
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(4, 4, 4);
+    camera.lookAt(0, 0, 0);
+
+    // レンダラーの設定
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // TrackballControlsの設定
+    controls = new TrackballControls(camera, renderer.domElement);
+    controls.rotateSpeed = 7.0;       // 回転速度
+    controls.zoomSpeed = 1.2; // ズーム速度
+    controls.panSpeed = 0.8;  // パン速度
+    controls.noZoom = true;  // ズーム可能
+    controls.noPan = true;    // パン操作は無効
+    controls.staticMoving = true;     // 慣性なし
+    controls.dynamicDampingFactor = 0.3;  // 減衰率
+    controls.enabled = true;
+
+    // ローディング表示を削除
+    const loadingElement = document.getElementById('loading');
+    if (loadingElement) {
+loadingElement.remove();
+    }
+
+    // Skewbの作成
+    createSkewb();
+//addAxisLines();
+    // アニメーションの開始
+    animate();
+
+setupInteractionEvents();
+
+initFlickControl();
+
+initDragOverlay();
+
+    // イベントリスナーの設定（init関数内に追加）
+    function setupInteractionEvents() {
+        const canvas = renderer.domElement;
+
+        // マウス/タッチの状態初期化
+        isDragging = false;
+        dominantAxis = null;
+        previousPosition.x = 0;
+        previousPosition.y = 0;
+
+        // マウスイベント
+        canvas.addEventListener('mousedown', onStart);
+        canvas.addEventListener('mousemove', onMove);
+        canvas.addEventListener('mouseup', onEnd);
+        canvas.addEventListener('mouseleave', onEnd);
+
+        // タッチイベント
+        canvas.addEventListener('touchstart', onStart, { passive: false });
+        canvas.addEventListener('touchmove', onMove, { passive: false });
+        canvas.addEventListener('touchend', onEnd);
+        canvas.addEventListener('touchcancel', onEnd);
+    }
+/*
+    // マウス操作のイベントリスナー
+    renderer.domElement.addEventListener('mousedown', onMouseDown);
+    renderer.domElement.addEventListener('mousemove', onMouseMove);
+    renderer.domElement.addEventListener('mouseup', onMouseUp);
+    renderer.domElement.addEventListener('mouseleave', onMouseUp);
+*/
+    // ウィンドウリサイズ対応
+    window.addEventListener('resize', onWindowResize, false);
+
+    // トグルボタンのイベントリスナー
+    document.getElementById('toggleControls').addEventListener('click', toggleControls);
+/*
+    document.getElementById('rotateF').addEventListener('click', () => {
+rotateGroup('F', -120);
+    });
+
+    document.getElementById('rotateFPrime').addEventListener('click', () => {
+rotateGroup('F', 120);
+    });
+
+    window.addEventListener('resize', onWindowResize, false);
+
+    document.getElementById('rotateR').addEventListener('click', () => {
+rotateGroup('R', -120);
+    });
+
+    document.getElementById('rotateRPrime').addEventListener('click', () => {
+rotateGroup('R', 120);
+    });
+
+    // Back face rotations
+    document.getElementById('rotateB').addEventListener('click', () => {
+rotateGroup('B', -120);
+    });
+    document.getElementById('rotateBPrime').addEventListener('click', () => {
+rotateGroup('B', 120);
+    });
+
+    // Left face rotations
+    document.getElementById('rotateL').addEventListener('click', () => {
+rotateGroup('L', -120);
+    });
+    document.getElementById('rotateLPrime').addEventListener('click', () => {
+rotateGroup('L', 120);
+    });
+
+    // Front bottom rotations
+    document.getElementById('rotateLittleF').addEventListener('click', () => {
+rotateGroup('f', -120);
+    });
+    document.getElementById('rotateLittleFPrime').addEventListener('click', () => {
+
+rotateGroup('f', 120);
+    });
+
+    // Right bottom rotations
+    document.getElementById('rotateLittleR').addEventListener('click', () => {
+rotateGroup('r', -120);
+    });
+    document.getElementById('rotateLittleRPrime').addEventListener('click', () => {
+rotateGroup('r', 120);
+    });
+
+    // Back bottom rotations
+    document.getElementById('rotateLittleB').addEventListener('click', () => {
+rotateGroup('b', -120);
+    });
+    document.getElementById('rotateLittleBPrime').addEventListener('click', () => {
+rotateGroup('b', 120);
+    });
+
+    // Left bottom rotations
+    document.getElementById('rotateLittleL').addEventListener('click', () => {
+rotateGroup('l', -120);
+    });
+    document.getElementById('rotateLittleLPrime').addEventListener('click', () => {
+rotateGroup('l', 120);
+    });
+
+    document.getElementById('rotateX').addEventListener('click', () => {
+        rotateCube('x', -90);
+    });
+    document.getElementById('rotateXPrime').addEventListener('click', () => {
+        rotateCube('x', 90);
+    });
+    document.getElementById('rotateX2').addEventListener('click', () => {
+        rotateCube('x', -180);
+    });
+    document.getElementById('rotateY').addEventListener('click', () => {
+        rotateCube('y', -90);
+    });
+    document.getElementById('rotateYPrime').addEventListener('click', () => {
+        rotateCube('y', 90);
+    });
+    document.getElementById('rotateY2').addEventListener('click', () => {
+        rotateCube('y', -180);
+    });
+    document.getElementById('rotateZ').addEventListener('click', () => {
+        rotateCube('z', -90);
+    });
+    document.getElementById('rotateZPrime').addEventListener('click', () => {
+        rotateCube('z', 90);
+    });
+    document.getElementById('rotateZ2').addEventListener('click', () => {
+        rotateCube('z', -180);
+    });
+
+*/
+}
+
+function createSkewb() {
+
+/*
+    const geometry = new THREE.BoxGeometry(2, 2, 2);
+    const materials = Array(6).fill(new THREE.MeshBasicMaterial({
+      transparent: true,
+      opacity: 0.1,
+      color: 0xcccccc
+    }));
+*/
+//完成後削除
+/*
+            // 中心点の作成
+            const centerGeometry = new THREE.SphereGeometry(0.05, 32, 32);
+            const centerMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+            const centerPoint = new THREE.Mesh(centerGeometry, centerMaterial);
+            centerPoint.position.set(0, 0, 0);
+            scene.add(centerPoint);
+
+            // 切れ目を表現するための線
+            const edges = new THREE.EdgesGeometry(geometry);
+            const line = new THREE.LineSegments(
+                edges,
+                new THREE.LineBasicMaterial({ color: 0x000000 })
+            );
+
+    // 座標軸の長さ
+    const axisLength = 2;
+
+    // X軸（赤）
+    const xPoints = [];
+    for(let i = -axisLength; i <= axisLength; i += 0.2) {
+        xPoints.push(i, 0, 0);
+    }
+    const xGeometry = new THREE.BufferGeometry();
+    xGeometry.setAttribute('position', new THREE.Float32BufferAttribute(xPoints, 3));
+    const xAxis = new THREE.LineSegments(
+        xGeometry,
+        new THREE.LineDashedMaterial({ color: 0xff0000, dashSize: 0.1, gapSize: 0.1 })
+    );
+    xAxis.computeLineDistances();
+    scene.add(xAxis);
+
+    // Y軸（緑）
+    const yPoints = [];
+    for(let i = -axisLength; i <= axisLength; i += 0.2) {
+        yPoints.push(0, i, 0);
+    }
+    const yGeometry = new THREE.BufferGeometry();
+    yGeometry.setAttribute('position', new THREE.Float32BufferAttribute(yPoints, 3));
+    const yAxis = new THREE.LineSegments(
+        yGeometry,
+        new THREE.LineDashedMaterial({ color: 0x00ff00, dashSize: 0.1, gapSize: 0.1 })
+    );
+    yAxis.computeLineDistances();
+    scene.add(yAxis);
+
+    // Z軸（青）
+    const zPoints = [];
+    for(let i = -axisLength; i <= axisLength; i += 0.2) {
+        zPoints.push(0, 0, i);
+    }
+    const zGeometry = new THREE.BufferGeometry();
+    zGeometry.setAttribute('position', new THREE.Float32BufferAttribute(zPoints, 3));
+    const zAxis = new THREE.LineSegments(
+        zGeometry,
+        new THREE.LineDashedMaterial({ color: 0x0000ff, dashSize: 0.1, gapSize: 0.1 })
+    );
+    zAxis.computeLineDistances();
+    scene.add(zAxis);
+
+
+
+
+    // 回転軸の定義
+    const ROTATION_AXES = {
+        F: { direction: [1, 1, 1], color: 0xFF0000 },      // 赤色
+        R: { direction: [1, 1, -1], color: 0x00FF00 },     // 緑色
+        L: { direction: [-1, 1, 1], color: 0x0000FF },     // 青色
+        B: { direction: [-1, 1, -1], color: 0xFFDF50 },    // 黄色
+        f: { direction: [1, -1, 1], color: 0xFF00FF },     // マゼンタ
+        r: { direction: [1, -1, -1], color: 0x00FFFF },    // シアン
+        l: { direction: [-1, -1, 1], color: 0xFFA500 },    // オレンジ
+        b: { direction: [-1, -1, -1], color: 0x800080 }    // 紫色
+    };
+
+    // 点線の作成に関する共通設定
+    const LINE_CONFIG = {
+        dashSize: 0.1,
+        gapSize: 0.1,
+        stepSize: 0.1,
+        maxLength: 2
+    };
+
+    // 点線を作成する関数
+    const createDashedLine = (xMult, yMult, zMult, color) => {
+        const points = [];
+        for(let i = 0; i <= LINE_CONFIG.maxLength; i += LINE_CONFIG.stepSize) {
+            points.push(i * xMult, i * yMult, i * zMult);
+        }
+
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute(points, 3));
+
+        const line = new THREE.LineSegments(
+            geometry,
+            new THREE.LineDashedMaterial({
+                color: color,
+                dashSize: LINE_CONFIG.dashSize,
+                gapSize: LINE_CONFIG.gapSize
+            })
+        );
+
+        line.computeLineDistances();
+        return line;
+    };
+
+    // 各回転軸の点線を作成してシーンに追加
+    Object.entries(ROTATION_AXES).forEach(([axisName, {direction, color}]) => {
+        const [x, y, z] = direction;
+        const line = createDashedLine(x, y, z, color);
+        line.userData.axisName = axisName;  // 軸の名前を保存
+        scene.add(line);
+    });
+
+
+
+*/
+   //完成後削除（ここまで）
+
+//センターパーツ
+// 四角形の共通設定を定義
+const createSquare = (color, position, rotation, group) => {
+    const shape = new THREE.Shape();
+    shape.moveTo(1, 0);     // 開始点
+    shape.lineTo(0, 1);     // 右上
+    shape.lineTo(-1, 0);    // 左
+    shape.lineTo(0, -1);    // 右下
+    shape.lineTo(1, 0);     // 終点（閉じる）
+
+    const geometry = new THREE.ShapeGeometry(shape);
+    const material = new THREE.MeshBasicMaterial({
+        color: color,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 1.0//0に近づくと透明になる
+    });
+
+    const square = new THREE.Mesh(geometry, material);
+    square.userData.group = group;
+
+    // 輪郭線の追加
+    const edges = new THREE.EdgesGeometry(geometry);
+    const line = new THREE.LineSegments(
+        edges,
+        new THREE.LineBasicMaterial({ color: COLORS.BLACK })
+    );
+    square.add(line);
+
+    // 位置と回転の設定
+    if (position) {
+        square.position.copy(position);
+    }
+    if (rotation) {
+        square.rotation.copy(rotation);
+    }
+    return square;
+};
+
+// 各面の作成
+const squares = [
+   {
+       color: COLORS.BLUE,
+       position: new THREE.Vector3(0, 0, -1),
+       rotation: new THREE.Euler(0, 0, 0),
+       group: CENTERS.BR
+   },
+   {
+       color: COLORS.GREEN,
+       position: new THREE.Vector3(0, 0, 1),
+       rotation: new THREE.Euler(0, 0, 0),
+       group: CENTERS.FL
+   },
+   {
+       color: COLORS.RED,
+       position: new THREE.Vector3(1, 0, 0),
+       rotation: new THREE.Euler(0, Math.PI / 2, 0),
+       group: CENTERS.FR
+   },
+   {
+       color: COLORS.ORANGE,
+       position: new THREE.Vector3(-1, 0, 0),
+       rotation: new THREE.Euler(0, Math.PI / 2, 0),
+       group: CENTERS.BL
+   },
+   {
+       color: COLORS.YELLOW,
+       position: new THREE.Vector3(0, -1, 0),
+       rotation: new THREE.Euler(Math.PI / 2, 0, 0),
+       group: CENTERS.D
+   },
+   {
+       color: COLORS.WHITE,
+       position: new THREE.Vector3(0, 1, 0),
+       rotation: new THREE.Euler(Math.PI / 2, 0, 0),
+       group: CENTERS.U
+   }
+];
+
+// 四角形を作成してシーンに追加
+squares.forEach(({ color, position, rotation, group }) => {
+    const square = createSquare(color, position, rotation, group);
+//    cubeGroup.add(square);
+    scene.add(square);
+});
+
+// 三角形を作成する関数（共通の輪郭線を追加）
+const createTriangle = (points, color, group) => {
+    const shape = new THREE.Shape();
+    shape.moveTo(points[0].x, points[0].y)
+         .lineTo(points[1].x, points[1].y)
+         .lineTo(points[2].x, points[2].y)
+         .lineTo(points[0].x, points[0].y);
+
+    const geometry = new THREE.ShapeGeometry(shape);
+    const material = new THREE.MeshBasicMaterial({
+        color: color,
+        side: THREE.DoubleSide,
+        transparent: true,
+        opacity: 1//透明化
+    });
+
+    const triangle = new THREE.Mesh(geometry, material);
+    triangle.userData.group = group;
+
+    // 輪郭線の追加
+    const edges = new THREE.EdgesGeometry(geometry);
+    const line = new THREE.LineSegments(
+        edges,
+        new THREE.LineBasicMaterial({ color: COLORS.BLACK })
+    );
+    triangle.add(line);
+
+    return triangle;
+};
+
+// 基本の三角形の頂点
+const baseTrianglePoints = [
+    new THREE.Vector2(1, 1),
+    new THREE.Vector2(0, 1),
+    new THREE.Vector2(1, 0)
+];
+
+// 三角形の配置設定
+const triangleConfigurations = [
+    // 緑面の三角形 (z = 1)
+    {
+        color: COLORS.GREEN,
+        basePosition: { axis: 'z', value: 1 },
+        rotations: [
+          { z: 0, group: CORNERS.UF },
+          { z: Math.PI/2, group: CORNERS.UL },
+          { z: -Math.PI/2, group: CORNERS.DF },
+          { z: Math.PI, group: CORNERS.DL }
+        ]
+    },
+    // 赤面の三角形 (x = 1)
+    {
+        color: COLORS.RED,
+        basePosition: { axis: 'x', value: 1 },
+        rotations: [
+          { y: Math.PI/2, group: CORNERS.UR },
+          { y: -Math.PI/2, group: CORNERS.UF },
+          { z: Math.PI, y: Math.PI/2, group: CORNERS.DF },
+          { z: Math.PI, y: -Math.PI/2, group: CORNERS.DR }
+        ]
+    },
+    // 白面の三角形 (y = 1)
+    {
+        color: COLORS.WHITE,
+        basePosition: { axis: 'y', value: 1 },
+        rotations: [
+          { x: -Math.PI/2, group: CORNERS.UR },
+          { x: Math.PI/2, group: CORNERS.UF },
+          { z: Math.PI, x: -Math.PI/2, group: CORNERS.UL },
+          { z: Math.PI, x: Math.PI/2, group: CORNERS.UB }
+        ]
+    },
+    // 青面の三角形 (z = -1)
+    {
+        color: COLORS.BLUE,
+        basePosition: { axis: 'z', value: -1 },
+        rotations: [
+          { z: 0, group: CORNERS.UR },
+          { z: Math.PI/2, group: CORNERS.UB },
+          { z: -Math.PI/2, group: CORNERS.DR },
+          { z: Math.PI, group: CORNERS.DB }
+        ]
+    },
+    // オレンジ面の三角形 (x = -1)
+    {
+        color: COLORS.ORANGE,
+        basePosition: { axis: 'x', value: -1 },
+        rotations: [
+          { y: Math.PI/2, group: CORNERS.UB },
+          { y: -Math.PI/2, group: CORNERS.UL },
+          { z: Math.PI, y: Math.PI/2, group: CORNERS.DL },
+          { z: Math.PI, y: -Math.PI/2, group: CORNERS.DB }
+        ]
+    },
+    // 黄面の三角形 (y = -1)
+    {
+        color: COLORS.YELLOW,
+        basePosition: { axis: 'y', value: -1 },
+        rotations: [
+          { x: -Math.PI/2, group: CORNERS.DR },
+          { x: Math.PI/2, group: CORNERS.DF },
+          { z: Math.PI, x: -Math.PI/2, group: CORNERS.DL },
+          { z: Math.PI, x: Math.PI/2, group: CORNERS.DB }
+        ]
+    }
+];
+
+// 三角形を生成して配置
+triangleConfigurations.forEach(config => {
+    config.rotations.forEach(rotation => {
+        const triangle = createTriangle(baseTrianglePoints, config.color, rotation.group);
+
+        // 位置の設定
+        const position = new THREE.Vector3();
+        position[config.basePosition.axis] = config.basePosition.value;
+        triangle.position.copy(position);
+
+        // 回転の設定
+        Object.entries(rotation).forEach(([axis, angle]) => {
+          if (axis !== 'group') {  // group以外の属性のみ回転に適用
+              triangle.rotation[axis] = angle;
+          }
+        });
+//        cubeGroup.add(triangle);
+       scene.add(triangle);
+    });
+});
+
+
+}
+
+// 制御の切り替え機能
+function toggleControls() {
+    isControlEnabled = !isControlEnabled;
+    controls.enabled = isControlEnabled;
+
+    // 回転制御OFFの時にカメラを初期位置に戻す
+    if (!isControlEnabled) {
+        // カメラを完全に初期状態に戻す
+        camera.position.set(4, 4, 4);
+        camera.up.set(0, 1, 0);  // カメラの上方向を設定
+        camera.lookAt(0, 0, 0);
+    }
+
+    const button = document.getElementById('toggleControls');
+    button.textContent = `回転制御: ${isControlEnabled ? 'ON' : 'OFF'}`;
+}
+/*
+function onMouseDown(event) {
+    if (!isControlEnabled) {
+        isDragging = true;
+        dominantAxis = null;
+        previousMousePosition = {
+            x: event.clientX,
+            y: event.clientY
+        };
+    }
+}
+
+function onMouseMove(event) {
+    if (!isControlEnabled && isDragging) {
+        const deltaMove = {
+            x: event.clientX - previousMousePosition.x,
+            y: event.clientY - previousMousePosition.y
+        };
+
+        if (!dominantAxis) {
+            // ドラッグの方向を判定（最初の大きな動きで判断）
+            if (Math.abs(deltaMove.x) > 20 || Math.abs(deltaMove.y) > 20) {
+                // x軸回転: 垂直方向の動き
+                if (Math.abs(deltaMove.y) > Math.abs(deltaMove.x) * 1.5) {
+                    dominantAxis = 'x';
+                }
+                // y軸回転: 水平方向の動き
+                else if (Math.abs(deltaMove.x) > Math.abs(deltaMove.y) * 1.5) {
+                    dominantAxis = 'y';
+                }
+                // z軸回転: 斜め方向の動き
+                else {
+                    dominantAxis = 'z';
+                }
+            }
+        } else {
+            // 回転の実行
+            switch (dominantAxis) {
+                case 'x':
+                    if (Math.abs(deltaMove.y) >= 100) {
+                        const direction = deltaMove.y > 0 ? 90 : -90;
+                        rotateCube('x', direction);
+                        previousMousePosition.y = event.clientY;
+                    }
+                    break;
+                case 'y':
+                    if (Math.abs(deltaMove.x) >= 100) {
+                        const direction = deltaMove.x > 0 ? -90 : 90;
+                        rotateCube('y', direction);
+                        previousMousePosition.x = event.clientX;
+                    }
+                    break;
+                case 'z':
+                    const diagonal = (deltaMove.x + deltaMove.y) / 2;
+                    if (Math.abs(diagonal) >= 100) {
+                        const direction = diagonal > 0 ? -90 : 90;
+                        rotateCube('z', direction);
+                        previousMousePosition = { x: event.clientX, y: event.clientY };
+                    }
+                    break;
+            }
+        }
+    }
+}
+
+function onMouseUp() {
+    isDragging = false;
+    dominantAxis = null;
+}
+
+
+*/
+// イベントハンドラ
+function onStart(event) {
+    if (!isControlEnabled) {
+        event.preventDefault();
+        isDragging = true;
+        dominantAxis = null;
+
+        const pos = getEventPosition(event);
+        previousPosition = {
+            x: pos.x,
+            y: pos.y
+        };
+    }
+}
+
+function onMove(event) {
+    if (!isControlEnabled && isDragging) {
+        event.preventDefault();
+
+        const pos = getEventPosition(event);
+        const deltaMove = {
+            x: pos.x - previousPosition.x,
+            y: pos.y - previousPosition.y
+        };
+
+        if (!dominantAxis) {
+            // ドラッグの方向を判定
+            if (Math.abs(deltaMove.x) > 15 || Math.abs(deltaMove.y) > 15) {
+                // x軸回転: 左下から右上、または右上から左下への動き
+                if ((Math.abs(deltaMove.x) > 15 && Math.abs(deltaMove.y) > 15) &&
+                    ((deltaMove.x > 0 && deltaMove.y < 0) || (deltaMove.x < 0 && deltaMove.y > 0))) {
+                    dominantAxis = 'x';
+                }
+                // y軸回転: 水平方向の動き
+                else if (Math.abs(deltaMove.x) > Math.abs(deltaMove.y) * 2.5) {
+                    dominantAxis = 'y';
+                }
+                // z軸回転: 左上から右下、または右下から左上への動き
+                else if ((Math.abs(deltaMove.x) > 20 && Math.abs(deltaMove.y) > 20) &&
+                        ((deltaMove.x > 0 && deltaMove.y > 0) || (deltaMove.x < 0 && deltaMove.y < 0))) {
+                    dominantAxis = 'z';
+                }
+            }
+        } else {
+            // 回転の実行
+            switch (dominantAxis) {
+                case 'x':
+                    const diagonalX = (deltaMove.x - deltaMove.y) / 2; // x軸用の斜め計算
+                    if (Math.abs(diagonalX) >= 80) {
+                        // 左下から右上（x）、右上から左下（x'）
+                        const direction = diagonalX > 0 ? -90 : 90;
+                        rotateCube('x', direction);
+                        previousPosition = { x: pos.x, y: pos.y };
+                    }
+                    break;
+                case 'y':
+                    if (Math.abs(deltaMove.x) >= 120) {
+                        // 右から左（y）、左から右（y'）
+                        const direction = deltaMove.x < 0 ? -90 : 90;
+                        rotateCube('y', direction);
+                        previousPosition.x = pos.x;
+                    }
+                    break;
+                case 'z':
+                    const diagonalZ = (deltaMove.x + deltaMove.y) / 2; // z軸用の斜め計算
+                    if (Math.abs(diagonalZ) >= 80) {
+                        // 左上から右下（z）、右下から左上（z'）
+                        const direction = diagonalZ > 0 ? -90 : 90;
+                        rotateCube('z', direction);
+                        previousPosition = { x: pos.x, y: pos.y };
+                    }
+                    break;
+            }
+        }
+    }
+}
+
+function onEnd() {
+    isDragging = false;
+    dominantAxis = null;
+}
+
+// イベントの座標を取得するユーティリティ関数
+function getEventPosition(event) {
+    if (event.touches) {
+        // タッチイベントの場合
+        return {
+            x: event.touches[0].clientX,
+            y: event.touches[0].clientY
+        };
+    } else {
+        // マウスイベントの場合
+        return {
+            x: event.clientX,
+            y: event.clientY
+        };
+    }
+}
+
+let isAlternateMode = false;  // falseがR,r,B,b、trueがL,l,F,f
+let lastTapTime = 0;
+const doubleTapDelay = 300;  // ダブルタップと判定する時間間隔（ミリ秒）
+
+let isDraggingButton = false;  // ボタンのドラッグ状態
+let dragStartTime = 0;         // 長押し判定用
+const LONG_PRESS_DELAY = 1500;  // 長押しと判定する時間（ミリ秒）
+let longPressTimer = null;
+
+function initFlickControl() {
+    const flickButton = document.getElementById('flick-button');
+    const flickOptions = document.getElementById('flick-options');
+    let startX, startY;
+    let isFlicking = false;
+
+    flickButton.addEventListener('touchstart', handleStart);
+    flickButton.addEventListener('touchmove', handleMove);
+    flickButton.addEventListener('touchend', handleEnd);
+    flickButton.addEventListener('mousedown', handleStart);
+    flickButton.addEventListener('mousemove', handleMove);
+    flickButton.addEventListener('mouseup', handleEnd);
+
+    function handleStart(e) {
+        e.preventDefault();
+        const currentTime = new Date().getTime();
+        dragStartTime = currentTime;  // 長押し判定用の時間を記録
+        // ダブルタップの判定
+            const tapLength = currentTime - lastTapTime;//ダブルタップ用
+            if (tapLength < doubleTapDelay && tapLength > 0) {
+                // ダブルタップ検出
+                isAlternateMode = !isAlternateMode;
+                isFlicking = true;
+                const pos = getEventPosition(e);
+                startX = pos.x;
+                startY = pos.y;
+                updateFlickOptions();
+                flickOptions.classList.remove('hidden');
+//                e.preventDefault();
+                return;
+            }
+
+            lastTapTime = currentTime;
+
+            // 通常のタップ処理
+            isFlicking = true;
+            const pos = getEventPosition(e);
+            startX = pos.x;
+            startY = pos.y;
+            flickOptions.classList.remove('hidden');
+
+
+            let moveExecuted = false;
+
+        // 長押しタイマーの設定
+        longPressTimer = setTimeout(() => {
+            if (!moveExecuted && isFlicking) {  // フリック操作が完了していない場合のみ実行
+                isDraggingButton = true;
+                isFlicking = false;
+                flickOptions.classList.add('hidden');
+
+                // オーバーレイを表示
+                document.getElementById('drag-overlay').classList.remove('hidden');
+
+                // フリックボタンの初期位置を現在の指の位置に設定
+                const flickControl = document.getElementById('flick-control');
+                flickControl.style.bottom = `${window.innerHeight - pos.y}px`;
+                flickControl.style.right = `${window.innerWidth - pos.x}px`;
+            }
+        }, LONG_PRESS_DELAY);
+
+        return {
+             setMoveExecuted: () => {
+                 moveExecuted = true;
+                 if (longPressTimer) {
+                     clearTimeout(longPressTimer);
+                     longPressTimer = null;
+                 }
+             }
+         };
+
+
+
+
+/*
+        // moveExecutedフラグを更新する関数
+        const setMoveExecuted = () => {
+          moveExecuted = true;
+          if (longPressTimer) {
+              clearTimeout(longPressTimer);
+              longPressTimer = null;
+          }
+        };
+
+        // handleMoveやexecuteMoveにフラグ更新関数を渡す
+        handleMove = (e) => {
+            // ... 既存のhandleMove処理 ...
+            if (move) {
+                executeMove(move);
+                setMoveExecuted(); // 回転実行時にフラグを更新
+            }
+        };
+*/
+    }
+
+
+
+    function updateFlickOptions() {
+        const options = document.querySelectorAll('.flick-option');
+        if (isAlternateMode) {
+            options[0].textContent = 'F';  // 下
+            options[1].textContent = 'F\'';  // 左
+            options[2].textContent = 'l';  // 上
+            options[3].textContent = 'l\'';  // 右
+            options[4].textContent = 'L';  // 下
+            options[5].textContent = 'L\'';  // 左
+            options[6].textContent = 'f';  // 上
+            options[7].textContent = 'f\'';  // 右
+        } else {
+            options[0].textContent = 'B';  // 下
+            options[1].textContent = 'B\'';  // 左
+            options[2].textContent = 'r';  // 上
+            options[3].textContent = 'r\'';  // 右
+            options[4].textContent = 'R';  // 下
+            options[5].textContent = 'R\'';  // 左
+            options[6].textContent = 'b';  // 上
+            options[7].textContent = 'b\'';  // 右
+        }
+    }
+
+    function handleMove(e) {
+        e.preventDefault();
+        const pos = getEventPosition(e);
+
+        // ドラッグ中の移動処理
+        if (isDraggingButton) {
+            const flickControl = document.getElementById('flick-control');
+
+            // 画面端からの最小距離
+            const minDistance = 70;
+
+            // 新しい位置を計算
+            let newBottom = window.innerHeight - pos.y;
+            let newRight = window.innerWidth - pos.x;
+
+            // 位置の制限
+            newBottom = Math.max(minDistance, Math.min(window.innerHeight - minDistance, newBottom));
+            newRight = Math.max(minDistance, Math.min(window.innerWidth - minDistance, newRight));
+
+            // 制限された位置を適用
+            flickControl.style.bottom = `${newBottom}px`;
+            flickControl.style.right = `${newRight}px`;
+            return;
+        }
+
+        // 通常のフリック処理
+        if (!isDraggingButton && isFlicking) {
+            const deltaX = pos.x - startX;
+            const deltaY = pos.y - startY;
+            const angle = Math.atan2(deltaY, deltaX) * 180 / Math.PI;
+
+            if (Math.abs(deltaX) > 30 || Math.abs(deltaY) > 30) {
+                const move = determineMove(angle);
+                if (move) {
+                    executeMove(move);
+                    isFlicking = false;
+                    flickOptions.classList.add('hidden');
+                }
+            }
+        }
+    }
+
+/*
+    function handleMove(e) {
+        if (!isFlicking) return;
+        e.preventDefault();
+
+        const pos = getEventPosition(e);
+        const deltaX = pos.x - startX;
+        const deltaY = pos.y - startY;
+        const angle = Math.atan2(deltaY, deltaX) * 180 / Math.PI;
+
+        // 方向に基づいて回転を決定
+        if (Math.abs(deltaX) > 30 || Math.abs(deltaY) > 30) {
+            const move = determineMove(angle);
+            if (move) {
+                executeMove(move);
+                isFlicking = false;
+                flickOptions.classList.add('hidden');
+            }
+        }
+
+    }
+*/
+    function handleEnd() {
+      // タイマーをクリア
+      if (longPressTimer) {
+          clearTimeout(longPressTimer);
+          longPressTimer = null;
+      }
+
+      if (isDraggingButton) {
+          // ドラッグ終了時の処理
+          document.getElementById('drag-overlay').classList.add('hidden');
+      }
+
+        isDragging = false;
+        isFlicking = false;
+        isDraggingButton = false;
+        flickOptions.classList.add('hidden');
+
+        // モードを元に戻す
+        if (isAlternateMode) {
+            isAlternateMode = false;
+            updateFlickOptions();
+        }
+    }
+
+    function determineMove(angle) {
+        if (isAlternateMode) {
+            // L,l,F,fモード
+            const sectors = {
+                'l': [-22.5, 22.5],      // 上 (-45度〜45度)
+                'l\'':[22.5, 67.5],
+                'L': [67.5, 112.5],      // 右 (45度〜135度)
+                'L\'':[112.5, 157.5],
+                'f': [157.5, -157.5],    // 下 (135度〜-135度)
+                'f\'':[-157.5, -112.5],
+                'F': [-112.5, -67.5,],    // 左 (-135度〜-45度)
+                'F\'':[-67.5, -22.5]
+            }
+            for (const [move, [min, max]] of Object.entries(sectors)) {
+              if (min <= max) {
+                if (angle >= min && angle < max) return move;
+              } else {
+                if (angle >= min || angle < max) return move;
+              }
+            }
+        } else {
+            // R,r,B,bモード
+            const sectors = {
+                'r': [-22.5, 22.5],      // 上 (-45度〜45度)
+                'r\'':[22.5, 67.5],
+                'R': [67.5, 112.5],      // 右 (45度〜135度)
+                'R\'':[112.5, 157.5],
+                'b': [157.5, -157.5],    // 下 (135度〜-135度)
+                'b\'':[-157.5, -112.5],
+                'B': [-112.5, -67.5,],    // 左 (-135度〜-45度)
+                'B\'':[-67.5, -22.5]
+            }
+            for (const [move, [min, max]] of Object.entries(sectors)) {
+              if (min <= max) {
+                if (angle >= min && angle < max) return move;
+              } else {
+                if (angle >= min || angle < max) return move;
+              }
+            }
+        }
+        return null;
+    }
+
+
+    function executeMove(move) {
+      // 長押しタイマーをクリア
+      if (longPressTimer) {
+          clearTimeout(longPressTimer);
+          longPressTimer = null;
+      }
+
+      isFlicking = false;  // フリック操作の完了を示す
+
+        switch(move) {
+            case 'R':
+                rotateGroup('R', -120);
+                break;
+            case 'R\'':
+                rotateGroup('R', 120);
+                break;
+            case 'r':
+                rotateGroup('r', -120);
+                break;
+            case 'r\'':
+                rotateGroup('r', 120);
+                break;
+            case 'B':
+                rotateGroup('B', -120);
+                break;
+            case 'B\'':
+                rotateGroup('B', 120);
+                break;
+            case 'b':
+                rotateGroup('b', -120);
+                break;
+            case 'b\'':
+                rotateGroup('b', 120);
+                break;
+            case 'F':
+                rotateGroup('F', -120);
+                break;
+            case 'F\'':
+                rotateGroup('F', 120);
+                break;
+            case 'f':
+                rotateGroup('f', -120);
+                break;
+            case 'f\'':
+                rotateGroup('f', 120);
+                break;
+            case 'L':
+                rotateGroup('L', -120);
+                break;
+            case 'L\'':
+                rotateGroup('L', 120);
+                break;
+            case 'l':
+                rotateGroup('l', -120);
+                break;
+            case 'l\'':
+                rotateGroup('l', 120);
+                break;
+        }
+    }
+    // 回転実行後、モードと表示を元に戻す
+    if (isAlternateMode) {
+      isAlternateMode = false;
+      updateFlickOptions();
+    }
+}
+
+
+function initDragOverlay() {
+    const overlay = document.getElementById('drag-overlay');
+    overlay.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+    });
+    overlay.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+    });
+    overlay.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+    });
+}
+
+
+
+function animate() {
+    requestAnimationFrame(animate);
+    if (isControlEnabled) {
+        controls.update();
+    }
+    renderer.render(scene, camera);
+}
+
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            controls.handleResize(); // コントロールの状態を更新
+        }
+
+        // DOMContentLoadedを待ってから初期化
+        document.addEventListener('DOMContentLoaded', () => {
+            init();
+        });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
