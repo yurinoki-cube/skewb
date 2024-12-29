@@ -29,6 +29,21 @@
 <!--    <div id="info"></div>-->
           </div>
     </div>
+
+    <div class="row">
+      <div class="col-md-10">
+
+      </div>
+        <div class="col-md-2">
+          <div id="container">
+            <!-- Three.jsのcanvasがここに追加されます -->
+          </div>
+        </div>
+
+      </div>
+
+
+
     <div class="row">
       <div class="col-sm-12" >
 
@@ -68,14 +83,14 @@
     <div id="flick-control">
         <div id="flick-button" class="flick-circle">
           <div id="flick-options" class="hidden">
-              <div class="flick-option" data-move="B" style="top: -60px;">B</div>         <!-- 上 -->
-              <div class="flick-option" data-move="B'" style="top: -45px; right: -37.5px;">B'</div>
-              <div class="flick-option" data-move="r" style="right: -52px;">r</div>       <!-- 右 -->
-              <div class="flick-option" data-move="r'" style="bottom: -37.5px; right: -37.5px;">r'</div>
-              <div class="flick-option" data-move="R" style="bottom: -52px;">R</div>      <!-- 下 -->
-              <div class="flick-option" data-move="R'" style="bottom: -37.5px; left: -45px;">R'</div>
-              <div class="flick-option" data-move="b" style="left: -60px;">b</div>        <!-- 左 -->
-              <div class="flick-option" data-move="b'" style="top: -45px; left: -45px;">b'</div>
+              <div class="flick-option" data-move="B" style="top: -12vmin;">B</div>         <!-- 上 -->
+              <div class="flick-option" data-move="B'" style="top: -12vmin; right: -12vmin;">B'</div>
+              <div class="flick-option" data-move="r" style="right: -12vmin;">r</div>       <!-- 右 -->
+              <div class="flick-option" data-move="r'" style="bottom: -12vmin; right: -12vmin;">r'</div>
+              <div class="flick-option" data-move="R" style="bottom: -12vmin;">R</div>      <!-- 下 -->
+              <div class="flick-option" data-move="R'" style="bottom: -12vmin; left: -12vmin;">R'</div>
+              <div class="flick-option" data-move="b" style="left: -12vmin;">b</div>        <!-- 左 -->
+              <div class="flick-option" data-move="b'" style="top: -12vmin; left: -12vmin;">b'</div>
           </div>
         </div>
     </div>
@@ -1445,6 +1460,8 @@ function normalizeAngle(angle) {
 
 
 function init() {
+    const container = document.getElementById('container');
+
     // シーンの作成
     scene = new THREE.Scene();
     scene.background = new THREE.Color(0xf5f5f5);
@@ -1457,8 +1474,14 @@ function init() {
 
     // レンダラーの設定
     renderer = new THREE.WebGLRenderer({ antialias: true });
+//renderer.setSize(200, 200);
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
+
+
+
+
+
 
     // TrackballControlsの設定
     controls = new TrackballControls(camera, renderer.domElement);
@@ -1520,6 +1543,15 @@ initDragOverlay();
 */
     // ウィンドウリサイズ対応
     window.addEventListener('resize', onWindowResize, false);
+/*
+// リサイズハンドラ
+window.addEventListener('resize', () => {
+    const newWidth = container.clientWidth;
+    camera.aspect = 1; // 正方形を維持
+    camera.updateProjectionMatrix();
+    renderer.setSize(newWidth, newWidth);
+});
+*/
 
     // トグルボタンのイベントリスナー
     document.getElementById('toggleControls').addEventListener('click', toggleControls);
@@ -2162,7 +2194,7 @@ const doubleTapDelay = 300;  // ダブルタップと判定する時間間隔（
 
 let isDraggingButton = false;  // ボタンのドラッグ状態
 let dragStartTime = 0;         // 長押し判定用
-const LONG_PRESS_DELAY = 1500;  // 長押しと判定する時間（ミリ秒）
+const LONG_PRESS_DELAY = 15000;  // 長押しと判定する時間（ミリ秒）
 let longPressTimer = null;
 
 function initFlickControl() {
