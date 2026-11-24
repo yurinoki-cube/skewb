@@ -1,6 +1,7 @@
 /*#controls button,
 .rotation-controls button,*/
 #toggleControls,
+#toggleFixedHome,
 #flick-control,
 .flick-option {
     user-select: none;
@@ -91,6 +92,30 @@
       background-color: #e0e0e0;
   }
 
+  /* 【追加】8個の回転記号を囲む円
+     記号の中心は半径15vmin、記号の半径5vmin＋余白1.5vmin → 円の半径21.5vmin */
+  #flick-ring {
+      position: absolute;
+      width: 43vmin;
+      height: 43vmin;
+      top: -16.5vmin;   /* 5vmin(ボタンの中心) - 21.5vmin */
+      left: -16.5vmin;
+      border: 2px solid #333;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.5);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      pointer-events: none;
+      z-index: -1;      /* ボタン・回転記号の後ろに表示 */
+  }
+
+  /* 【追加】指/カーソルが乗っている回転記号（ここで離すと回転する） */
+  .flick-option.active {
+      background-color: #4a90d9;
+      color: #ffffff;
+      border-color: #1f5fa8;
+      transform: scale(1.1);
+  }
+
 
 
 
@@ -108,7 +133,9 @@
   border-radius: 5px;
 }
 */
-#toggleControls {
+/* 【変更】#toggleFixedHome（元位置固定）も回転制御ボタンと同じデザイン */
+#toggleControls,
+#toggleFixedHome {
     position: absolute;
     right: 10px;
     margin-top: 5px;
@@ -124,8 +151,20 @@
     color:
 }
 
-#toggleControls:hover {
+#toggleControls:hover,
+#toggleFixedHome:hover {
     background-color: #808080;
+}
+
+/* 【追加】元位置固定は画面の左上（それ以外は回転制御ボタンと同じ） */
+#toggleFixedHome {
+    right: auto;
+    left: 10px;
+}
+
+/* 回転制御OFFのときは非表示（BootstrapのCSSが後から読み込まれ .btn の display が優先されるため、id付きで指定） */
+#toggleFixedHome.hidden {
+    display: none;
 }
 
 #loading {
