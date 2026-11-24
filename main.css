@@ -17,6 +17,10 @@
       z-index: 1000;
       pointer-events: auto;
       transition: all 0.01s;  /* 位置の変更をスムーズに */
+      /* 【変更】四角を横に並べる（左=B、右=R）。右下基準なので R の位置は今までと同じ */
+      display: flex;
+      flex-direction: row;
+      gap: 5vmin;   /* 【変更】四角の間隔を四角の半分（10vmin の半分 = 5vmin）にする */
   }
 
   #drag-overlay {
@@ -41,31 +45,51 @@
   }
 
 
-  .flick-circle {
+  /* 【変更】丸いボタン → 角の丸い四角（上=B、下=R） */
+  .flick-square {
       width: 10vmin;
       height: 10vmin;
-      background-color: rgba(255, 255, 255, 0.8);
-      border: 2px solid #333;
-      border-radius: 50%;
+      background-color: #ffffff;   /* 【変更】透けないようにする */
+      border: 1px solid #333;      /* 【変更】枠線を細く（2px → 1px） */
+      border-radius: 2vmin;
       cursor: pointer;
       position: relative;
       box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
   }
 
-  #flick-options {
+  /* 【変更】回転記号を表示している間は、押していない方の四角を背景の後ろに隠す
+     （押している四角 ＞ 背景 ＞ もう一方の四角 の順に重ねる） */
+  #flick-control.flick-open .flick-square:not(.open) {
+      z-index: -2;
+  }
+
+  /* 四角の中の文字（B / R、ダブルタップ中は F / L） */
+  .flick-label {
+      font-size: 5vmin;
+      font-weight: normal;   /* 【変更】文字を細く（太字をやめる） */
+      color: #333;
+      pointer-events: none;
+  }
+
+  /* 4方向の回転記号を置く枠（四角と同じ位置・大きさ） */
+  .flick-options {
       position: absolute;
+      top: -1px;    /* 四角の枠線の分だけずらして、四角とぴったり重ねる */
+      left: -1px;
       width: 10vmin;
       height: 10vmin;
-
   }
 
   .flick-option {
       position: absolute;
       width: 10vmin;
       height: 10vmin;
-      background-color: rgba(255, 255, 255, 0.9);
+      background-color: #ffffff;   /* 【変更】透けないようにする */
       border: 1px solid #333;
-      border-radius: 50%;
+      border-radius: 2vmin;   /* 【変更】丸 → 角の丸い四角 */
       display: flex;
       align-items: center;
       justify-content: center;
@@ -92,27 +116,27 @@
       background-color: #e0e0e0;
   }
 
-  /* 【追加】8個の回転記号を囲む円
-     記号の中心は半径15vmin、記号の半径5vmin＋余白1.5vmin → 円の半径21.5vmin */
-  #flick-ring {
+  /* 【変更】4方向の回転記号を囲む、角の丸い四角
+     回転記号は中心から11vmin（大きさ10vmin）→ 全体32vmin ＋ 余白1.5vmin → 35vmin */
+  .flick-backdrop {
       position: absolute;
-      width: 43vmin;
-      height: 43vmin;
-      top: -16.5vmin;   /* 5vmin(ボタンの中心) - 21.5vmin */
-      left: -16.5vmin;
-      border: 2px solid #333;
-      border-radius: 50%;
-      background-color: rgba(255, 255, 255, 0.5);
+      width: 35vmin;
+      height: 35vmin;
+      top: -12.5vmin;   /* 5vmin(四角の中心) - 17.5vmin */
+      left: -12.5vmin;
+      border: 1px solid #333;   /* 【変更】境界を細く（2px → 1px） */
+      border-radius: 4vmin;
+      background-color: #f2f2f2;   /* 【変更】透けないようにする */
       box-shadow: 0 2px 6px rgba(0,0,0,0.2);
       pointer-events: none;
-      z-index: -1;      /* ボタン・回転記号の後ろに表示 */
+      z-index: -1;      /* 押している四角・回転記号の後ろ、もう一方の四角の前に表示 */
   }
 
   /* 【追加】指/カーソルが乗っている回転記号（ここで離すと回転する） */
   .flick-option.active {
-      background-color: #4a90d9;
-      color: #ffffff;
-      border-color: #1f5fa8;
+      background-color: #d3d3d3;   /* 【変更】青 → ライトグレー */
+      color: #333333;
+      border-color: #333333;
       transform: scale(1.1);
   }
 
