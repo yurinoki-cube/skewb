@@ -26,7 +26,7 @@
     <div class="row">
           <div class="col-sm-12">
                 <!-- 【追加】元位置固定：回転制御ONのときだけ表示。ONなら、視点を回して指を離すと元の視点に戻る -->
-                <button id="toggleFixedHome" class="btn btn-secondary hidden">元位置固定: OFF</button>
+                <button id="toggleFixedHome" class="btn btn-secondary hidden">元位置固定: ON</button>
                 <button id="toggleControls" class="btn btn-secondary">回転制御: OFF</button>
 <!--    <div id="info"></div>-->
           </div>
@@ -82,19 +82,26 @@
  -->
     <div id="loading">Loading...</div>
 
+    <!-- 【変更】8方向フリック → 4方向フリック（角の丸い四角を2つ横に並べる：左=B、右=R） -->
     <div id="flick-control">
-        <div id="flick-button" class="flick-circle">
-          <div id="flick-options" class="hidden">
-              <!-- 【変更】8個の回転記号を囲む円（記号は半径15vminの円周上に等間隔で配置） -->
-              <div id="flick-ring"></div>
-              <div class="flick-option" data-move="B" style="top: -15vmin; left: 0;">B</div>                 <!-- 上 -->
-              <div class="flick-option" data-move="B'" style="top: -10.61vmin; left: 10.61vmin;">B'</div>   <!-- 右上 -->
-              <div class="flick-option" data-move="r" style="top: 0; left: 15vmin;">r</div>                  <!-- 右 -->
-              <div class="flick-option" data-move="r'" style="top: 10.61vmin; left: 10.61vmin;">r'</div>    <!-- 右下 -->
-              <div class="flick-option" data-move="R" style="top: 15vmin; left: 0;">R</div>                  <!-- 下 -->
-              <div class="flick-option" data-move="R'" style="top: 10.61vmin; left: -10.61vmin;">R'</div>   <!-- 左下 -->
-              <div class="flick-option" data-move="b" style="top: 0; left: -15vmin;">b</div>                 <!-- 左 -->
-              <div class="flick-option" data-move="b'" style="top: -10.61vmin; left: -10.61vmin;">b'</div>  <!-- 左上 -->
+        <div id="flick-button-B" class="flick-button flick-square" data-group="B">
+          <span class="flick-label">B</span>
+          <div class="flick-options hidden">
+              <div class="flick-backdrop"></div>
+              <div class="flick-option" data-dir="up"    style="top: -11vmin; left: 0;">B</div>      <!-- 上 -->
+              <div class="flick-option" data-dir="left"  style="top: 0; left: -11vmin;">b</div>      <!-- 左 -->
+              <div class="flick-option" data-dir="right" style="top: 0; left: 11vmin;">b'</div>      <!-- 右 -->
+              <div class="flick-option" data-dir="down"  style="top: 11vmin; left: 0;">B'</div>      <!-- 下 -->
+          </div>
+        </div>
+        <div id="flick-button-R" class="flick-button flick-square" data-group="R">
+          <span class="flick-label">R</span>
+          <div class="flick-options hidden">
+              <div class="flick-backdrop"></div>
+              <div class="flick-option" data-dir="up"    style="top: -11vmin; left: 0;">R</div>      <!-- 上 -->
+              <div class="flick-option" data-dir="left"  style="top: 0; left: -11vmin;">r</div>      <!-- 左 -->
+              <div class="flick-option" data-dir="right" style="top: 0; left: 11vmin;">r'</div>      <!-- 右 -->
+              <div class="flick-option" data-dir="down"  style="top: 11vmin; left: 0;">R'</div>      <!-- 下 -->
           </div>
         </div>
     </div>
@@ -988,7 +995,7 @@ let isAnimating = false;
 const DEFAULT_CONTROL_ENABLED = false;
 
 // 【追加】元位置固定（回転制御ONのとき、指を離したら視点を元の位置に戻す）
-let isFixedHome = false;         // 初期値はOFF
+let isFixedHome = true;          // 【変更】初期値はON
 let isReturningHome = false;     // 元の視点に戻している途中か
 let isControlEnabled = DEFAULT_CONTROL_ENABLED;
 let animationGroup = new THREE.Group();
@@ -2294,79 +2301,105 @@ function getEventPosition(event) {
     }
 }
 
-let isAlternateMode = false;  // falseがR,r,B,b、trueがL,l,F,f
+let isAlternateMode = false;  // falseがB/R、trueがF/L（ダブルタップした四角だけ切り替わる）
 let lastTapTime = 0;
 const doubleTapDelay = 300;  // ダブルタップと判定する時間間隔（ミリ秒）
 
 let isDraggingButton = false;  // ボタンのドラッグ状態
 let dragStartTime = 0;         // 長押し判定用
-const LONG_PRESS_DELAY = 2000;  // 長押しと判定する時間（ミリ秒）
+const LONG_PRESS_DELAY = 3000;  // 【変更】長押しと判定する時間（ミリ秒）：ダブルタップのあと3秒
+// 【追加】フリックと判定する最小の移動距離（四角の大きさ 10vmin の半分 = 5vmin）
+const FLICK_MIN_DISTANCE = () => Math.min(window.innerWidth, window.innerHeight) * 0.05;
 let longPressTimer = null;
+let pendingRotations = [];     // 【追加】実行待ちの回転（速いフリックの入力を捨てないため）
+
+// 【変更】4方向フリックの表示（四角ごと・通常/ダブルタップ時）
+//   B の四角：上=B, 左=b, 右=b', 下=B'（ダブルタップで F, f, f', F'）
+//   R の四角：上=R, 左=r, 右=r', 下=R'（ダブルタップで L, l, l', L'）
+const FLICK_LABELS = {
+    B: {
+        normal:    { center: 'B', up: 'B', left: 'b', right: "b'", down: "B'" },
+        alternate: { center: 'F', up: 'F', left: 'f', right: "f'", down: "F'" }
+    },
+    R: {
+        normal:    { center: 'R', up: 'R', left: 'r', right: "r'", down: "R'" },
+        alternate: { center: 'L', up: 'L', left: 'l', right: "l'", down: "L'" }
+    }
+};
 
 function initFlickControl() {
-    const flickButton = document.getElementById('flick-button');
-    const flickOptions = document.getElementById('flick-options');
+    const flickButtons = document.querySelectorAll('.flick-square');
+    let activeButton = null;    // 押している四角
+    let flickOptions = null;    // 押している四角の回転記号（4方向）
+    let lastTapButton = null;   // ダブルタップ判定用：前回タップした四角
     let startX, startY;
     let isFlicking = false;
 
-    flickButton.addEventListener('touchstart', handleStart);
-    flickButton.addEventListener('touchmove', handleMove);
-    flickButton.addEventListener('touchend', handleEnd);
-    flickButton.addEventListener('mousedown', handleStart);
-    // 【バグ修正】マウスは円の外に出てもドラッグ・フリックを続けられるよう document で受け取る
+    flickButtons.forEach(button => {
+        button.addEventListener('touchstart', handleStart);
+        button.addEventListener('touchmove', handleMove);
+        button.addEventListener('touchend', handleEnd);
+        button.addEventListener('mousedown', handleStart);
+    });
+    // 【バグ修正】マウスは四角の外に出てもドラッグ・フリックを続けられるよう document で受け取る
     document.addEventListener('mousemove', (e) => {
         if (!isDraggingButton && !isFlicking) return;
         // 画面外で左ボタンを離した場合など、ボタンが押されていなければ終了
-        if (e.buttons === 0) { handleEnd(); return; }
+        if (e.buttons === 0) { handleEnd(e); return; }
         handleMove(e);
     });
-    document.addEventListener('mouseup', () => {
+    document.addEventListener('mouseup', (e) => {
         if (!isDraggingButton && !isFlicking && !longPressTimer) return;
-        handleEnd();
+        handleEnd(e);
     });
 
-    // ドラッグ開始時の「指/カーソル」と「円の右下」とのずれ（掴んだ位置を保つため）
+    // ドラッグ開始時の「指/カーソル」と「フリック部品の右下」とのずれ（掴んだ位置を保つため）
     let dragOffsetRight = 0;
     let dragOffsetBottom = 0;
     let lastPointerPos = { x: 0, y: 0 };  // 最新の指/カーソルの位置
 
     function handleStart(e) {
         e.preventDefault();
+        const button = e.currentTarget;
         const currentTime = new Date().getTime();
         dragStartTime = currentTime;  // 長押し判定用の時間を記録
-        // ダブルタップの判定
-            const tapLength = currentTime - lastTapTime;//ダブルタップ用
-            if (tapLength < doubleTapDelay && tapLength > 0) {
-                // ダブルタップ検出
-                isAlternateMode = !isAlternateMode;
-                isFlicking = true;
-                const pos = getEventPosition(e);
-                startX = pos.x;
-                startY = pos.y;
-                lastPointerPos = pos;
-                updateFlickOptions();
-                flickOptions.classList.remove('hidden');
-                // 【変更】ボタンの位置移動は「2回タップ＆長押し」のときだけ
-                startLongPressTimer();
-//                e.preventDefault();
-                return;
-            }
 
-            lastTapTime = currentTime;
+        // ダブルタップの判定（同じ四角を続けてタップしたときだけ）
+        const tapLength = currentTime - lastTapTime;
+        const isDoubleTap = tapLength < doubleTapDelay && tapLength > 0 && button === lastTapButton;
 
-            // 通常のタップ処理
-            isFlicking = true;
-            const pos = getEventPosition(e);
-            startX = pos.x;
-            startY = pos.y;
-            lastPointerPos = pos;
+        activeButton = button;
+        flickOptions = button.querySelector('.flick-options');
+        isFlicking = true;
+        const pos = getEventPosition(e);
+        startX = pos.x;
+        startY = pos.y;
+        lastPointerPos = pos;
+
+        if (isDoubleTap) {
+            // ダブルタップ：B→F、R→L に切り替え（指を離すと元に戻る）
+            isAlternateMode = true;
+            lastTapTime = 0;  // 3回目のタップをダブルタップと数えない
+            updateFlickOptions();
+            button.classList.add('open');
+            document.getElementById('flick-control').classList.add('flick-open');  // 【追加】もう一方の四角を背景の後ろへ
             flickOptions.classList.remove('hidden');
+            // 【変更】四角の位置移動は「ダブルタップ＆3秒長押し」のときだけ
+            startLongPressTimer();
+            return;
+        }
 
+        lastTapTime = currentTime;
+        lastTapButton = button;
 
-            // 【変更】1回目のタップでは長押しタイマーを設定しない（位置移動は2回タップ＆長押しのみ）
+        // 通常のタップ処理
+        updateFlickOptions();
+        button.classList.add('open');
+            document.getElementById('flick-control').classList.add('flick-open');  // 【追加】もう一方の四角を背景の後ろへ
+        flickOptions.classList.remove('hidden');
     }
 
-    // 【変更】長押しタイマー（2回タップの2回目を押したままにすると、ボタンの位置移動モードになる）
+    // 長押しタイマー（ダブルタップの2回目を押したままにすると、四角の位置移動モードになる）
     function startLongPressTimer() {
         if (longPressTimer) {
             clearTimeout(longPressTimer);
@@ -2376,67 +2409,39 @@ function initFlickControl() {
             if (isFlicking) {  // 回転記号を選び始めていない場合のみ実行
                 isDraggingButton = true;
                 isFlicking = false;
-                flickOptions.classList.add('hidden');
+                hideFlickOptions();
 
                 // オーバーレイを表示
                 document.getElementById('drag-overlay').classList.remove('hidden');
 
-                // 【バグ修正】円を指/カーソルの位置へ飛ばさず、掴んだ位置のずれを記録する
-                // （以前は右下の角をカーソルに合わせていたため、円がカーソルから逃げていた）
+                // 【バグ修正】四角を指/カーソルの位置へ飛ばさず、掴んだ位置のずれを記録する
                 const flickControl = document.getElementById('flick-control');
                 const rect = flickControl.getBoundingClientRect();
                 dragOffsetRight = rect.right - lastPointerPos.x;
                 dragOffsetBottom = rect.bottom - lastPointerPos.y;
             }
         }, LONG_PRESS_DELAY);
-
-
-
-
-/*
-        // moveExecutedフラグを更新する関数
-        const setMoveExecuted = () => {
-          moveExecuted = true;
-          if (longPressTimer) {
-              clearTimeout(longPressTimer);
-              longPressTimer = null;
-          }
-        };
-
-        // handleMoveやexecuteMoveにフラグ更新関数を渡す
-        handleMove = (e) => {
-            // ... 既存のhandleMove処理 ...
-            if (move) {
-                executeMove(move);
-                setMoveExecuted(); // 回転実行時にフラグを更新
-            }
-        };
-*/
     }
 
+    // 回転記号を隠す
+    function hideFlickOptions() {
+        document.querySelectorAll('.flick-options').forEach(o => o.classList.add('hidden'));
+        document.querySelectorAll('.flick-square').forEach(b => b.classList.remove('open'));
+        document.getElementById('flick-control').classList.remove('flick-open');
+        document.querySelectorAll('.flick-option').forEach(o => o.classList.remove('active'));
+    }
 
-
+    // 【変更】四角と回転記号の表示を更新（ダブルタップ中の四角だけ F / L の表示にする）
     function updateFlickOptions() {
-        const options = document.querySelectorAll('.flick-option');
-        if (isAlternateMode) {
-            options[0].textContent = 'F';  // 下
-            options[1].textContent = 'F\'';  // 左
-            options[2].textContent = 'l';  // 上
-            options[3].textContent = 'l\'';  // 右
-            options[4].textContent = 'L';  // 下
-            options[5].textContent = 'L\'';  // 左
-            options[6].textContent = 'f';  // 上
-            options[7].textContent = 'f\'';  // 右
-        } else {
-            options[0].textContent = 'B';  // 下
-            options[1].textContent = 'B\'';  // 左
-            options[2].textContent = 'r';  // 上
-            options[3].textContent = 'r\'';  // 右
-            options[4].textContent = 'R';  // 下
-            options[5].textContent = 'R\'';  // 左
-            options[6].textContent = 'b';  // 上
-            options[7].textContent = 'b\'';  // 右
-        }
+        flickButtons.forEach(button => {
+            const group = button.dataset.group;
+            const mode = (isAlternateMode && button === activeButton) ? 'alternate' : 'normal';
+            const labels = FLICK_LABELS[group][mode];
+            button.querySelector('.flick-label').textContent = labels.center;
+            button.querySelectorAll('.flick-option').forEach(option => {
+                option.textContent = labels[option.dataset.dir];
+            });
+        });
     }
 
     function handleMove(e) {
@@ -2486,18 +2491,33 @@ function initFlickControl() {
         }
     }
 
-    // 【追加】指定した位置にある回転記号の枠（円形）を返す。枠の外なら null
+    // 【変更】指定した位置にある回転記号の枠（四角）を返す。表示中の4つだけが対象。枠の外なら null
     function getOptionAt(pos) {
-        const options = document.querySelectorAll('.flick-option');
+        if (!flickOptions || flickOptions.classList.contains('hidden')) return null;
+        const options = flickOptions.querySelectorAll('.flick-option');
         for (const option of options) {
             const r = option.getBoundingClientRect();
-            const cx = r.left + r.width / 2;
-            const cy = r.top + r.height / 2;
-            if (Math.hypot(pos.x - cx, pos.y - cy) <= r.width / 2) {
+            if (pos.x >= r.left && pos.x <= r.right && pos.y >= r.top && pos.y <= r.bottom) {
                 return option;
             }
         }
         return null;
+    }
+
+    // 【追加】枠の外で離したとき、押した位置からの方向（上下左右）で回転記号を選ぶ
+    //         押した四角の外まで動かしていない（四角の中で離した）ときは null（回転しない）
+    function getOptionByDirection(pos) {
+        if (!flickOptions || flickOptions.classList.contains('hidden')) return null;
+        const dx = pos.x - startX;
+        const dy = pos.y - startY;
+        if (Math.hypot(dx, dy) < FLICK_MIN_DISTANCE()) return null;
+        let dir;
+        if (Math.abs(dx) > Math.abs(dy)) {
+            dir = dx > 0 ? 'right' : 'left';
+        } else {
+            dir = dy > 0 ? 'down' : 'up';
+        }
+        return flickOptions.querySelector(`.flick-option[data-dir="${dir}"]`);
     }
 
 /*
@@ -2522,17 +2542,31 @@ function initFlickControl() {
 
     }
 */
-    function handleEnd() {
-      // 【変更】回転記号の枠の中で離したときだけ、その記号の回転をする
-      //         （表示中の記号＝textContent を使うので、ダブルタップの L,l,F,f モードにも対応）
+    function handleEnd(e) {
+      // 【改善】指/カーソルを離した位置を正確に取る
+      //         （速いフリックでは最後の move イベントが離した位置より手前のことがある）
+      if (e && e.changedTouches && e.changedTouches.length > 0) {
+          lastPointerPos = { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
+      } else if (e && typeof e.clientX === 'number') {
+          lastPointerPos = { x: e.clientX, y: e.clientY };
+      }
+
+      // 回転記号の枠の中で離したら、その記号の回転をする
+      //  （表示中の記号＝textContent を使うので、ダブルタップの F・L 表示にも対応）
+      // 【改善】速いフリックで枠に届かなかった／通り過ぎた場合は、フリックした方向（上下左右）で判定する
+      let flicked = false;
       if (isFlicking && !isDraggingButton) {
-          const option = getOptionAt(lastPointerPos);
+          const option = getOptionAt(lastPointerPos) || getOptionByDirection(lastPointerPos);
           if (option) {
               executeMove(option.textContent.trim());
+              flicked = true;
           }
       }
-      document.querySelectorAll('.flick-option').forEach(option => option.classList.remove('active'));
-
+      // 【改善】フリックした場合は「タップ」ではないので、次のタップをダブルタップと数えない
+      //         （速く続けてフリックしたとき、2回目が F・L になってしまうのを防ぐ）
+      if (flicked || Math.hypot(lastPointerPos.x - startX, lastPointerPos.y - startY) > FLICK_MIN_DISTANCE()) {
+          lastTapTime = 0;
+      }
       // タイマーをクリア
       if (longPressTimer) {
           clearTimeout(longPressTimer);
@@ -2547,13 +2581,13 @@ function initFlickControl() {
         isDragging = false;
         isFlicking = false;
         isDraggingButton = false;
-        flickOptions.classList.add('hidden');
+        hideFlickOptions();
 
-        // モードを元に戻す
-        if (isAlternateMode) {
-            isAlternateMode = false;
-            updateFlickOptions();
-        }
+        // モードを元に戻す（指を離すと F→B、L→R の表示に戻る）
+        isAlternateMode = false;
+        updateFlickOptions();
+        activeButton = null;
+        flickOptions = null;
     }
 
     function determineMove(angle) {
@@ -2600,6 +2634,22 @@ function initFlickControl() {
     }
 
 
+    // 【改善】回転のアニメーション中に入力された回転を捨てずに、順番に実行する
+    function queueRotation(axis, angle) {
+        pendingRotations.push([axis, angle]);
+        if (pendingRotations.length === 1) processRotationQueue();
+    }
+    function processRotationQueue() {
+        if (pendingRotations.length === 0) return;
+        if (isAnimating) {
+            requestAnimationFrame(processRotationQueue);  // 前の回転が終わるのを待つ
+            return;
+        }
+        const [axis, angle] = pendingRotations.shift();
+        rotateGroup(axis, angle);
+        if (pendingRotations.length > 0) requestAnimationFrame(processRotationQueue);
+    }
+
     function executeMove(move) {
       // 長押しタイマーをクリア
       if (longPressTimer) {
@@ -2611,52 +2661,52 @@ function initFlickControl() {
 
         switch(move) {
             case 'R':
-                rotateGroup('R', -120);
+                queueRotation('R', -120);
                 break;
             case 'R\'':
-                rotateGroup('R', 120);
+                queueRotation('R', 120);
                 break;
             case 'r':
-                rotateGroup('r', -120);
+                queueRotation('r', -120);
                 break;
             case 'r\'':
-                rotateGroup('r', 120);
+                queueRotation('r', 120);
                 break;
             case 'B':
-                rotateGroup('B', -120);
+                queueRotation('B', -120);
                 break;
             case 'B\'':
-                rotateGroup('B', 120);
+                queueRotation('B', 120);
                 break;
             case 'b':
-                rotateGroup('b', -120);
+                queueRotation('b', -120);
                 break;
             case 'b\'':
-                rotateGroup('b', 120);
+                queueRotation('b', 120);
                 break;
             case 'F':
-                rotateGroup('F', -120);
+                queueRotation('F', -120);
                 break;
             case 'F\'':
-                rotateGroup('F', 120);
+                queueRotation('F', 120);
                 break;
             case 'f':
-                rotateGroup('f', -120);
+                queueRotation('f', -120);
                 break;
             case 'f\'':
-                rotateGroup('f', 120);
+                queueRotation('f', 120);
                 break;
             case 'L':
-                rotateGroup('L', -120);
+                queueRotation('L', -120);
                 break;
             case 'L\'':
-                rotateGroup('L', 120);
+                queueRotation('L', 120);
                 break;
             case 'l':
-                rotateGroup('l', -120);
+                queueRotation('l', -120);
                 break;
             case 'l\'':
-                rotateGroup('l', 120);
+                queueRotation('l', 120);
                 break;
         }
     }
