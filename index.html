@@ -25,7 +25,9 @@
   <div class="container-fluid">
     <div class="row">
           <div class="col-sm-12">
-                <button id="toggleControls" class="btn btn-secondary">回転制御: ON</button>
+                <!-- 【追加】元位置固定：回転制御ONのときだけ表示。ONなら、視点を回して指を離すと元の視点に戻る -->
+                <button id="toggleFixedHome" class="btn btn-secondary hidden">元位置固定: OFF</button>
+                <button id="toggleControls" class="btn btn-secondary">回転制御: OFF</button>
 <!--    <div id="info"></div>-->
           </div>
     </div>
@@ -83,14 +85,16 @@
     <div id="flick-control">
         <div id="flick-button" class="flick-circle">
           <div id="flick-options" class="hidden">
-              <div class="flick-option" data-move="B" style="top: -12vmin;">B</div>         <!-- 上 -->
-              <div class="flick-option" data-move="B'" style="top: -12vmin; right: -12vmin;">B'</div>
-              <div class="flick-option" data-move="r" style="right: -12vmin;">r</div>       <!-- 右 -->
-              <div class="flick-option" data-move="r'" style="bottom: -12vmin; right: -12vmin;">r'</div>
-              <div class="flick-option" data-move="R" style="bottom: -12vmin;">R</div>      <!-- 下 -->
-              <div class="flick-option" data-move="R'" style="bottom: -12vmin; left: -12vmin;">R'</div>
-              <div class="flick-option" data-move="b" style="left: -12vmin;">b</div>        <!-- 左 -->
-              <div class="flick-option" data-move="b'" style="top: -12vmin; left: -12vmin;">b'</div>
+              <!-- 【変更】8個の回転記号を囲む円（記号は半径15vminの円周上に等間隔で配置） -->
+              <div id="flick-ring"></div>
+              <div class="flick-option" data-move="B" style="top: -15vmin; left: 0;">B</div>                 <!-- 上 -->
+              <div class="flick-option" data-move="B'" style="top: -10.61vmin; left: 10.61vmin;">B'</div>   <!-- 右上 -->
+              <div class="flick-option" data-move="r" style="top: 0; left: 15vmin;">r</div>                  <!-- 右 -->
+              <div class="flick-option" data-move="r'" style="top: 10.61vmin; left: 10.61vmin;">r'</div>    <!-- 右下 -->
+              <div class="flick-option" data-move="R" style="top: 15vmin; left: 0;">R</div>                  <!-- 下 -->
+              <div class="flick-option" data-move="R'" style="top: 10.61vmin; left: -10.61vmin;">R'</div>   <!-- 左下 -->
+              <div class="flick-option" data-move="b" style="top: 0; left: -15vmin;">b</div>                 <!-- 左 -->
+              <div class="flick-option" data-move="b'" style="top: -10.61vmin; left: -10.61vmin;">b'</div>  <!-- 左上 -->
           </div>
         </div>
     </div>
@@ -980,7 +984,13 @@ const skewb = new SkewbState();
 
 let scene, camera, renderer, controls;
 let isAnimating = false;
-let isControlEnabled = true;
+// 【変更】回転制御の初期値（true = ON, false = OFF）。起動時にボタン表示・TrackballControls もこの値に合わせる
+const DEFAULT_CONTROL_ENABLED = false;
+
+// 【追加】元位置固定（回転制御ONのとき、指を離したら視点を元の位置に戻す）
+let isFixedHome = false;         // 初期値はOFF
+let isReturningHome = false;     // 元の視点に戻している途中か
+let isControlEnabled = DEFAULT_CONTROL_ENABLED;
 let animationGroup = new THREE.Group();
 
 let isDragging = false;
@@ -1161,6 +1171,29 @@ function getRotationMatrix(axis, angle) {
     return rotationMatrix;
 }
 
+// 【バグ修正】animationGroupの姿勢を初期状態（回転なし）に戻す
+// 以前は前回の回転が残ったまま再利用され、行列⇔クォータニオン変換のたびに
+// 誤差が数倍ずつ増幅し、数十〜数百手でピースが歪んで状態とずれていた
+function resetAnimationGroup() {
+    animationGroup.position.set(0, 0, 0);
+    animationGroup.quaternion.identity();
+    animationGroup.scale.set(1, 1, 1);
+    animationGroup.updateMatrix();
+    animationGroup.updateMatrixWorld(true);
+}
+
+// 【バグ修正】ピースの行列を正確な値に丸める
+// Skewbの回転(120度)と持ち替え(90度)はどちらも立方体の対称操作なので、
+// ピースの行列の成分は必ず -1, 0, 1 のどれかになる。毎回丸めて誤差を消す
+function snapPieceMatrix(piece) {
+    const e = piece.matrix.elements;
+    for (let i = 0; i < 16; i++) {
+        e[i] = Math.round(e[i]) + 0; // +0 で -0 を 0 にする
+    }
+    piece.matrix.decompose(piece.position, piece.quaternion, piece.scale);
+    piece.matrixWorldNeedsUpdate = true;
+}
+
 // 回転アニメーションを実行する関数
 function rotateGroup(axis, angle) {
     if (isAnimating) return;
@@ -1171,6 +1204,8 @@ skewb.printState();
 //      cubeGroup.attach(animationGroup.children[0]);
       scene.attach(animationGroup.children[0]);
     }
+    // 【バグ修正】前回の回転がanimationGroupに残ったままだと誤差が蓄積・増幅するので毎回初期化する
+    resetAnimationGroup();
 
     // 現在の状態に基づいて回転軸の情報を取得
     const rotationAxis = getRotationAxisPieces(axis, skewb);
@@ -1217,13 +1252,14 @@ skewb.printState();
 
       resultQuaternion.slerpQuaternions(startQuaternion, endQuaternion, easeProgress);
 
-      const currentMatrix = new THREE.Matrix4();
-      currentMatrix.makeRotationFromQuaternion(resultQuaternion);
-      animationGroup.setRotationFromMatrix(currentMatrix);
+      // 【バグ修正】行列を経由せず、正規化したクォータニオンを直接設定する
+      animationGroup.quaternion.copy(resultQuaternion).normalize();
 
       if (progress < 1) {
         requestAnimationFrame(update);
       } else {
+        // 最終フレームは補間せず、正確な終了姿勢にする
+        animationGroup.quaternion.copy(endQuaternion).normalize();
 //        cubeGroup.updateMatrixWorld();
         scene.updateMatrixWorld();
         targetPieces.forEach(piece => {
@@ -1234,8 +1270,11 @@ skewb.printState();
 //          piece.matrix.premultiply(new THREE.Matrix4().copy(cubeGroup.matrix).invert());
           piece.matrix.premultiply(new THREE.Matrix4().copy(scene.matrix).invert());
           piece.matrixAutoUpdate = false;
+          // 【バグ修正】回転後の行列を正確な値（-1, 0, 1）に戻して誤差をリセット
+          snapPieceMatrix(piece);
         });
         animationGroup.clear();
+        resetAnimationGroup();
         skewb.applyMove(axis, angle);
         skewb.printState();
         isAnimating = false;
@@ -1381,6 +1420,8 @@ function rotateCube(axis, angle) {
       while(animationGroup.children.length > 0) {
         scene.attach(animationGroup.children[0]);
       }
+      // 【バグ修正】animationGroupを毎回初期化する
+      resetAnimationGroup();
 
       // 現在の状態に基づいて回転軸の情報を取得
       const rotationAxis = getRotationAxisPieces(axis, skewb);
@@ -1423,13 +1464,14 @@ function rotateCube(axis, angle) {
         // 開始と終了の四元数間を補間
                resultQuaternion.slerpQuaternions(startQuaternion, endQuaternion, easeProgress);
 
-        const currentMatrix = new THREE.Matrix4();
-        currentMatrix.makeRotationFromQuaternion(resultQuaternion);
-        animationGroup.setRotationFromMatrix(currentMatrix);
+        // 【バグ修正】行列を経由せず、正規化したクォータニオンを直接設定する
+        animationGroup.quaternion.copy(resultQuaternion).normalize();
 
         if (progress < 1) {
             requestAnimationFrame(update);
         } else {
+            // 最終フレームは補間せず、正確な終了姿勢にする
+            animationGroup.quaternion.copy(endQuaternion).normalize();
             scene.updateMatrixWorld();
             targetPieces.forEach(piece => {
               const worldMatrix = piece.matrixWorld.clone();
@@ -1437,8 +1479,11 @@ function rotateCube(axis, angle) {
               piece.matrix.copy(worldMatrix);
               piece.matrix.premultiply(new THREE.Matrix4().copy(scene.matrix).invert());
               piece.matrixAutoUpdate = false;
+              // 【バグ修正】回転後の行列を正確な値（-1, 0, 1）に戻して誤差をリセット
+              snapPieceMatrix(piece);
             });
             animationGroup.clear();
+            resetAnimationGroup();
             skewb.applyRotation(axis, angle);
             skewb.printState();
             isAnimating = false;
@@ -1492,7 +1537,15 @@ function init() {
     controls.noPan = true;    // パン操作は無効
     controls.staticMoving = true;     // 慣性なし
     controls.dynamicDampingFactor = 0.3;  // 減衰率
-    controls.enabled = true;
+    controls.enabled = isControlEnabled;  // 【変更】回転制御の初期値に合わせる
+    // 【追加】元位置固定がONなら、視点を回し終えて指を離したときに元の視点に戻す
+    controls.addEventListener('end', () => {
+        if (isFixedHome && isControlEnabled) {
+            returnCameraHome();
+        }
+    });
+    document.getElementById('toggleControls').textContent = `回転制御: ${isControlEnabled ? 'ON' : 'OFF'}`;
+    updateFixedHomeButton();
 
     // ローディング表示を削除
     const loadingElement = document.getElementById('loading');
@@ -1555,6 +1608,11 @@ window.addEventListener('resize', () => {
 
     // トグルボタンのイベントリスナー
     document.getElementById('toggleControls').addEventListener('click', toggleControls);
+    // 【追加】元位置固定ボタン
+    document.getElementById('toggleFixedHome').addEventListener('click', () => {
+        isFixedHome = !isFixedHome;
+        updateFixedHomeButton();
+    });
 /*
     document.getElementById('rotateF').addEventListener('click', () => {
 rotateGroup('F', -120);
@@ -2016,6 +2074,53 @@ function toggleControls() {
 
     const button = document.getElementById('toggleControls');
     button.textContent = `回転制御: ${isControlEnabled ? 'ON' : 'OFF'}`;
+    updateFixedHomeButton();
+}
+
+// 【追加】元位置固定ボタンの表示を更新（回転制御ONのときだけ表示）
+function updateFixedHomeButton() {
+    const button = document.getElementById('toggleFixedHome');
+    button.textContent = `元位置固定: ${isFixedHome ? 'ON' : 'OFF'}`;
+    button.classList.toggle('hidden', !isControlEnabled);
+}
+
+// 【追加】視点（カメラ）を起動時の位置 (4, 4, 4) へなめらかに戻す
+function returnCameraHome() {
+    if (isReturningHome) return;
+    isReturningHome = true;
+    controls.enabled = false;  // 戻している間は視点を回せないようにする
+
+    const homePosition = new THREE.Vector3(4, 4, 4);
+    const radius = homePosition.length();
+    const startQuaternion = camera.quaternion.clone();
+    // 起動時の視点（(4,4,4) から原点を見る、上方向は +Y）の向き
+    const homeMatrix = new THREE.Matrix4().lookAt(homePosition, new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 1, 0));
+    const endQuaternion = new THREE.Quaternion().setFromRotationMatrix(homeMatrix);
+
+    const duration = 250;
+    const startTime = performance.now();
+
+    function step() {
+        const t = Math.min((performance.now() - startTime) / duration, 1);
+        const ease = 1 - Math.pow(1 - t, 3);
+        const q = new THREE.Quaternion().slerpQuaternions(startQuaternion, endQuaternion, ease);
+        // 原点を見たまま、球面に沿ってカメラを動かす
+        camera.quaternion.copy(q);
+        camera.position.set(0, 0, radius).applyQuaternion(q);
+        camera.up.set(0, 1, 0).applyQuaternion(q);
+
+        if (t < 1) {
+            requestAnimationFrame(step);
+        } else {
+            // 最後は正確に起動時の視点にする
+            camera.position.copy(homePosition);
+            camera.up.set(0, 1, 0);
+            camera.lookAt(0, 0, 0);
+            controls.enabled = isControlEnabled;
+            isReturningHome = false;
+        }
+    }
+    requestAnimationFrame(step);
 }
 /*
 function onMouseDown(event) {
@@ -2169,6 +2274,7 @@ function onMove(event) {
 function onEnd() {
     isDragging = false;
     dominantAxis = null;
+
 }
 
 // イベントの座標を取得するユーティリティ関数
@@ -2207,8 +2313,22 @@ function initFlickControl() {
     flickButton.addEventListener('touchmove', handleMove);
     flickButton.addEventListener('touchend', handleEnd);
     flickButton.addEventListener('mousedown', handleStart);
-    flickButton.addEventListener('mousemove', handleMove);
-    flickButton.addEventListener('mouseup', handleEnd);
+    // 【バグ修正】マウスは円の外に出てもドラッグ・フリックを続けられるよう document で受け取る
+    document.addEventListener('mousemove', (e) => {
+        if (!isDraggingButton && !isFlicking) return;
+        // 画面外で左ボタンを離した場合など、ボタンが押されていなければ終了
+        if (e.buttons === 0) { handleEnd(); return; }
+        handleMove(e);
+    });
+    document.addEventListener('mouseup', () => {
+        if (!isDraggingButton && !isFlicking && !longPressTimer) return;
+        handleEnd();
+    });
+
+    // ドラッグ開始時の「指/カーソル」と「円の右下」とのずれ（掴んだ位置を保つため）
+    let dragOffsetRight = 0;
+    let dragOffsetBottom = 0;
+    let lastPointerPos = { x: 0, y: 0 };  // 最新の指/カーソルの位置
 
     function handleStart(e) {
         e.preventDefault();
@@ -2223,8 +2343,11 @@ function initFlickControl() {
                 const pos = getEventPosition(e);
                 startX = pos.x;
                 startY = pos.y;
+                lastPointerPos = pos;
                 updateFlickOptions();
                 flickOptions.classList.remove('hidden');
+                // 【変更】ボタンの位置移動は「2回タップ＆長押し」のときだけ
+                startLongPressTimer();
 //                e.preventDefault();
                 return;
             }
@@ -2236,14 +2359,21 @@ function initFlickControl() {
             const pos = getEventPosition(e);
             startX = pos.x;
             startY = pos.y;
+            lastPointerPos = pos;
             flickOptions.classList.remove('hidden');
 
 
-            let moveExecuted = false;
+            // 【変更】1回目のタップでは長押しタイマーを設定しない（位置移動は2回タップ＆長押しのみ）
+    }
 
-        // 長押しタイマーの設定
+    // 【変更】長押しタイマー（2回タップの2回目を押したままにすると、ボタンの位置移動モードになる）
+    function startLongPressTimer() {
+        if (longPressTimer) {
+            clearTimeout(longPressTimer);
+        }
         longPressTimer = setTimeout(() => {
-            if (!moveExecuted && isFlicking) {  // フリック操作が完了していない場合のみ実行
+            longPressTimer = null;
+            if (isFlicking) {  // 回転記号を選び始めていない場合のみ実行
                 isDraggingButton = true;
                 isFlicking = false;
                 flickOptions.classList.add('hidden');
@@ -2251,22 +2381,14 @@ function initFlickControl() {
                 // オーバーレイを表示
                 document.getElementById('drag-overlay').classList.remove('hidden');
 
-                // フリックボタンの初期位置を現在の指の位置に設定
+                // 【バグ修正】円を指/カーソルの位置へ飛ばさず、掴んだ位置のずれを記録する
+                // （以前は右下の角をカーソルに合わせていたため、円がカーソルから逃げていた）
                 const flickControl = document.getElementById('flick-control');
-                flickControl.style.bottom = `${window.innerHeight - pos.y}px`;
-                flickControl.style.right = `${window.innerWidth - pos.x}px`;
+                const rect = flickControl.getBoundingClientRect();
+                dragOffsetRight = rect.right - lastPointerPos.x;
+                dragOffsetBottom = rect.bottom - lastPointerPos.y;
             }
         }, LONG_PRESS_DELAY);
-
-        return {
-             setMoveExecuted: () => {
-                 moveExecuted = true;
-                 if (longPressTimer) {
-                     clearTimeout(longPressTimer);
-                     longPressTimer = null;
-                 }
-             }
-         };
 
 
 
@@ -2320,6 +2442,7 @@ function initFlickControl() {
     function handleMove(e) {
         e.preventDefault();
         const pos = getEventPosition(e);
+        lastPointerPos = pos;
 
         // ドラッグ中の移動処理
         if (isDraggingButton) {
@@ -2329,8 +2452,9 @@ function initFlickControl() {
             const minDistance = 70;
 
             // 新しい位置を計算
-            let newBottom = window.innerHeight - pos.y;
-            let newRight = window.innerWidth - pos.x;
+            // 【バグ修正】掴んだ位置のずれを保ったまま移動する
+            let newBottom = window.innerHeight - pos.y - dragOffsetBottom;
+            let newRight = window.innerWidth - pos.x - dragOffsetRight;
 
             // 位置の制限
             newBottom = Math.max(minDistance, Math.min(window.innerHeight - minDistance, newBottom));
@@ -2343,20 +2467,37 @@ function initFlickControl() {
         }
 
         // 通常のフリック処理
+        // 【変更】動かしただけでは回転しない。指/カーソルが乗っている回転記号を強調表示し、
+        //         離したときに枠の中なら回転する（handleEnd で実行）
         if (!isDraggingButton && isFlicking) {
             const deltaX = pos.x - startX;
             const deltaY = pos.y - startY;
-            const angle = Math.atan2(deltaY, deltaX) * 180 / Math.PI;
 
-            if (Math.abs(deltaX) > 30 || Math.abs(deltaY) > 30) {
-                const move = determineMove(angle);
-                if (move) {
-                    executeMove(move);
-                    isFlicking = false;
-                    flickOptions.classList.add('hidden');
-                }
+            // 回転記号を選ぶために動かし始めたら、長押し（位置移動）にはしない
+            if ((Math.abs(deltaX) > 30 || Math.abs(deltaY) > 30) && longPressTimer) {
+                clearTimeout(longPressTimer);
+                longPressTimer = null;
+            }
+
+            const hovered = getOptionAt(pos);
+            document.querySelectorAll('.flick-option').forEach(option => {
+                option.classList.toggle('active', option === hovered);
+            });
+        }
+    }
+
+    // 【追加】指定した位置にある回転記号の枠（円形）を返す。枠の外なら null
+    function getOptionAt(pos) {
+        const options = document.querySelectorAll('.flick-option');
+        for (const option of options) {
+            const r = option.getBoundingClientRect();
+            const cx = r.left + r.width / 2;
+            const cy = r.top + r.height / 2;
+            if (Math.hypot(pos.x - cx, pos.y - cy) <= r.width / 2) {
+                return option;
             }
         }
+        return null;
     }
 
 /*
@@ -2382,6 +2523,16 @@ function initFlickControl() {
     }
 */
     function handleEnd() {
+      // 【変更】回転記号の枠の中で離したときだけ、その記号の回転をする
+      //         （表示中の記号＝textContent を使うので、ダブルタップの L,l,F,f モードにも対応）
+      if (isFlicking && !isDraggingButton) {
+          const option = getOptionAt(lastPointerPos);
+          if (option) {
+              executeMove(option.textContent.trim());
+          }
+      }
+      document.querySelectorAll('.flick-option').forEach(option => option.classList.remove('active'));
+
       // タイマーをクリア
       if (longPressTimer) {
           clearTimeout(longPressTimer);
