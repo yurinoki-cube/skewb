@@ -113,7 +113,8 @@
     {
         "imports": {
             "three": "https://cdnjs.cloudflare.com/ajax/libs/three.js/0.162.0/three.module.min.js",
-            "three/examples/jsm/controls/TrackballControls": "https://unpkg.com/three@0.162.0/examples/jsm/controls/TrackballControls.js"
+            "three/examples/jsm/controls/TrackballControls": "https://unpkg.com/three@0.162.0/examples/jsm/controls/TrackballControls.js",
+            "three/examples/jsm/lines/": "https://unpkg.com/three@0.162.0/examples/jsm/lines/"
         }
     }
     </script>
@@ -121,6 +122,10 @@
     <script type="module">
     import * as THREE from 'three';
     import { TrackballControls } from 'three/examples/jsm/controls/TrackballControls';
+    // 【追加】太さを指定できる線（WebGLの通常の線は常に1pxで、太くできないため）
+    import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2.js';
+    import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry.js';
+    import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 
 
 
@@ -1511,6 +1516,27 @@ function normalizeAngle(angle) {
 
 
 
+// 【追加】ピースの輪郭線（線が細すぎて消えるため、少しだけ太くする）
+const OUTLINE_WIDTH = 1.5;  // 【変更】線の太さ（画面上のピクセル）。以前は1px相当
+const OUTLINE_MATERIAL = new LineMaterial({
+    color: COLORS.BLACK,
+    linewidth: OUTLINE_WIDTH,
+    worldUnits: false,  // 太さを画面のピクセルで指定（キューブの大きさや向きで変わらない）
+    resolution: new THREE.Vector2(window.innerWidth, window.innerHeight)
+});
+// 面の輪郭線を作る（EdgesGeometry の線を、太さを指定できる線に変換）
+function createOutline(geometry) {
+    const edges = new THREE.EdgesGeometry(geometry);
+    const lineGeometry = new LineSegmentsGeometry().fromEdgesGeometry(edges);
+    return new LineSegments2(lineGeometry, OUTLINE_MATERIAL);
+}
+// 【追加】面を奥へ少しだけずらし、同じ平面にある輪郭線が常に手前に見えるようにする（線が欠けるのを防ぐ）
+function pushFaceBack(material) {
+    material.polygonOffset = true;
+    material.polygonOffsetFactor = 1;
+    material.polygonOffsetUnits = 1;
+}
+
 function init() {
     const container = document.getElementById('container');
 
@@ -1867,15 +1893,12 @@ const createSquare = (color, position, rotation, group) => {
         opacity: 1.0//0に近づくと透明になる
     });
 
+    pushFaceBack(material);  // 【追加】
     const square = new THREE.Mesh(geometry, material);
     square.userData.group = group;
 
-    // 輪郭線の追加
-    const edges = new THREE.EdgesGeometry(geometry);
-    const line = new THREE.LineSegments(
-        edges,
-        new THREE.LineBasicMaterial({ color: COLORS.BLACK })
-    );
+    // 輪郭線の追加（【変更】少しだけ太い線にする）
+    const line = createOutline(geometry);
     square.add(line);
 
     // 位置と回転の設定
@@ -1951,15 +1974,12 @@ const createTriangle = (points, color, group) => {
         opacity: 1//透明化
     });
 
+    pushFaceBack(material);  // 【追加】
     const triangle = new THREE.Mesh(geometry, material);
     triangle.userData.group = group;
 
-    // 輪郭線の追加
-    const edges = new THREE.EdgesGeometry(geometry);
-    const line = new THREE.LineSegments(
-        edges,
-        new THREE.LineBasicMaterial({ color: COLORS.BLACK })
-    );
+    // 輪郭線の追加（【変更】少しだけ太い線にする）
+    const line = createOutline(geometry);
     triangle.add(line);
 
     return triangle;
@@ -2741,6 +2761,8 @@ function animate() {
     if (isControlEnabled) {
         controls.update();
     }
+    // 【追加】輪郭線の太さを画面の大きさに合わせる（画面サイズが変わっても太さを保つ）
+    renderer.getSize(OUTLINE_MATERIAL.resolution);
     renderer.render(scene, camera);
 }
 
